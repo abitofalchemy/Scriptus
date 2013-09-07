@@ -1,0 +1,7 @@
++ To remove directories recursively in a directory tree
+	
+	find . -name .svn -exec ls {} \;
+
+	find . -name .svn -exec rm -rf {} \;
+
+
