@@ -105,11 +105,15 @@ def endpage_pageid_gameuuid_4sssp(wp_page_id):
 ###############################################################
 if __name__ == "__main__":
     """ human_paths_src2dest_scores.py
-        Description: finds human (userid) paths for a given
-        game with given staring page 
+        Finds human (userid) paths for a given game with given staring page
         
         input: sssp folder 
         
+        1.  For each file in the sssp folder, get the source 'page_id', use it to query wikipediagame
+        and wikipedia to obtain the the number of clicks 
+        
+        2.  Using the source page_id, get games that have that as the starting page, find the 
+        end_page and within the input filename, find the sssp score
         Outputs: 
     """
     parser = argparse.ArgumentParser(description='py pub crawler...')
@@ -117,7 +121,8 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     fns  = getFilenames(args.directory)
-    page_id_set =[]
+    page_id_set =[] # holds the list of source page_ids
+    
     for filename in fns:
         #root, ext = os.path.splitext(filename)
         #if (filename.startswith("sssp_") and filename.endswith(".txt")):
@@ -136,4 +141,8 @@ if __name__ == "__main__":
                 csv.writer(f).writerow(row) #f.write(row)
             f.close()
             print 'Done writing results to file io'
+        else:
+            print srcNdestPageIds
+            break
+
     print 'Done.'
