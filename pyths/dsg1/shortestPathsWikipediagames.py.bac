@@ -23,12 +23,40 @@ import datetime
 from itertools import groupby
 from sssp_src2dest_score import find_sssp_score
 import csv
+import mmap
 
 #--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|
 def getFilenames(inDirPath):    
     
     filenames = filter( lambda f: not f.startswith('.'),[f for f in os.listdir(inDirPath) if os.path.isfile(os.path.join(inDirPath, f))])
     return filenames
+
+#--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|
+def find_sssp_score(dest_page_id_lst,sssp_file):
+    """ find_sssp_score
+        needs optimization, maybe bring the
+    parameters:
+    -----------
+        end_pageid
+        sssp_file full path to file
+    """
+    print sssp_file
+    ssspScore = []
+    with open(sssp_file, "r+b") as f:
+        map = mmap.mmap(f.fileno(), 0, prot=mmap.PROT_READ)
+        for endPageId in dest_page_id_lst:
+            #print endPageId
+            for line in iter(map.readline, ""):
+                if line.startswith('%s\t' % endPageId):
+                    score = re.split(r'%s\t' % endPageId, line.rstrip())
+                    ssspScore.append(score[1])
+                    print endPageId, score[1]
+                    break
+	    ## return pointer to the begining of the file        print ssspScore #return line
+            map.seek(0)
+        print 'Done with loop'
+        map.close()
+        return ssspScore
 
 #--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|
 def src_end_pageids_4sssp(wp_page_id):
@@ -118,24 +146,33 @@ if __name__ == "__main__":
         Outputs: 
     """
     debug = False 
-    parser = argparse.ArgumentParser(description='py pub crawler...')
-    parser.add_argument('gamesPath',help='directory to games/userids sets',action='store')
-    #parser.add_argument('directory',help='directory to use for sssp files',action='store')
-    #parser.add_argument('humanpathsdir',help='directory where human paths',action='store')
+    parser = argparse.ArgumentParser(description='games for a given sssp filename')
+    parser.add_argument('ssspPath',help='path to sssp filenames',action='store')
+    parser.add_argument('gamesPath',help='path to games filenames',action='store')
 
     args = parser.parse_args()
-    gameFilenameLst  = getFilenames(args.gamesPath)
-    # print gameFilenameLst
+
+    filenames     = getFilenames(args.ssspPath)
+    gameFilenames = getFilenames(args.gamesPath)
     
-    for inputGameFn in gameFilenameLst:
-        print inputGameFn
-        dfHP = pd.DataFrame() #columns=['game', 'usr', 'clicks'])
+    for inputGameFn in gameFilenames:
+        print inputGameFn  
+        dfHP = pd.DataFrame() 
         df = pd.read_csv(args.gamesPath+inputGameFn, sep=',') 
         df.columns= ['src_pg','game','end_pg'] 
-        # print df.head()
-        
-        ## Now that we have the src and dest nodes, and game, we  extract the
-        ## user that played the game 
+        print df.head()
+
+        ## find the paths for the array end_pg 
+        ssspFileStr = args.ssspPath+'sssp_'+str(df.src_pg[0])+'.txt'
+        #print ssspFileStr
+        spScore = find_sssp_score(df.end_pg, ssspFileStr)	
+        df['sp'] = Series(spScore, index=df1.index)
+        print df.head()
+        break
+    #############
+    print "Done."
+"""
+        # for each game (with source and destination) find the  
         userIdLst = []
         iterRow = df.iterrows()
         for i,row in iterRow:
@@ -155,7 +192,6 @@ if __name__ == "__main__":
         dfHP.to_csv(outFname, sep=',',mode='w',encoding='utf-8',index=False)
 
     print 'Done.'
-"""    
 
     hpfns  = getFilenames(args.humanpathsdir)
     
@@ -202,5 +238,12 @@ if __name__ == "__main__":
                 f.close()
                 print '>',outFile
     print 'Done. Finished all source nodes'
+
+
+    ## extract the sssp score for each game
+        for ssspFn in filenames:
+                    print ssspFn
+                            result = re.search('sssp_(.*).txt', ssspFn)
+                                    print result.groups()
 
 """

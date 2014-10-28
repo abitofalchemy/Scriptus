@@ -3,32 +3,48 @@
 # -*- coding: utf-8 -*-
 # http://www.thisisthegreenroom.com/2011/installing-python-numpy-scipy-matplotlib-and-ipython-on-lion/
 # -*--*--*--*--*--*--*--*-
-# human_paths_src2dest_scores.py 
-#   Human paths: for a game with starting page (page_id) ource and
+#   games_given_sssp.py
+#       return the games that start at given set of source nodes
 
 import os
 import sys
 import MySQLdb 
-from wikipediagame import humanPaths4GameStartingAt
-from wikipediagame import ssspScoreToEndpageIn
-import numpy as np
 import pandas as pd
+import numpy as np
+import mmap
 import glob
 import re
 import argparse
 import datetime
 from itertools import groupby
-from sssp_src2dest_score import find_sssp_score
 import csv
+#
+from wikipediagame import gamesWithSourceNode
 
 #--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|
+def find_sssp_score(end_pageid,sssp_file):
+    """ find_sssp_score 
+        needs optimization, maybe bring the 
+    parameters:
+    -----------
+        end_pageid
+        sssp_file full path to file
+    """
+    with open(sssp_file, "r+b") as f:
+        map = mmap.mmap(f.fileno(), 0, prot=mmap.PROT_READ)
+        for line in iter(map.readline, ""):
+            #if line.startswith(end_pageid+'\t'):
+            if line.startswith('%s\t'% end_pageid):
+                return line
+
+
 def getFilenames(inDirPath):    
     
     filenames = filter( lambda f: not f.startswith('.'),[f for f in os.listdir(inDirPath) if os.path.isfile(os.path.join(inDirPath, f))])
     return filenames
 
 #--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|
-def src_end_pageids_4sssp(wp_page_id):
+def src_end_pageids_4sssp(wp_page_id,limit=''):
     """ src_end_pageids_4sssp
         wp = wikipedia.page table
         input = page_id
@@ -108,54 +124,54 @@ def endpage_pageid_gameuuid_4sssp(wp_page_id):
 ##  main
 ###############################################################
 if __name__ == "__main__":
-    """ human_paths_src2dest_scores.py
-        Description: finds human (userid) paths for a given
-        game with given staring page 
-        
-        input: sssp folder 
-        
-        Outputs: 
-    """
-    parser = argparse.ArgumentParser(description='py pub crawler...')
-    parser.add_argument('directory',help='directory to use',action='store')
+    DBG = False
+    parser = argparse.ArgumentParser(description='games for a given sssp filename')
+    parser.add_argument('dirPath',help='path to sssp filenames',action='store')
 
     args = parser.parse_args()
-    fns  = getFilenames(args.directory)
-    page_id_set = [] ## declare a list
-    for filename in fns:
-        result = re.search('sssp_(.*).txt', filename)
-        if result is not None:
-            page_id_set.append(result.group(1))
-    srcPageIds = np.array(page_id_set)
+    
+    #filenames = re.search('sssp_(.*).txt', getFilenames(args.dirPath))
+    srcNodes = list()
+    results = []
+    filenames   = getFilenames(args.dirPath)
 
-    ## Games that start with these page_ids
+    ## extract source nodes 
+    for fn in filenames:
+        srcNodes.append(re.search('sssp_(.*).txt',fn).group(1))
 
-    #sys.exit() 
-
-    write2file = 0
-    for pageId in page_id_set:
-        #human_paths = endpage_pageid_gameuuid_4sssp(pageId)
-        #srcNdestPageIds = src_end_pageids_4sssp(pageId)
-        srcNdestPageIds = humanPaths4GameStartingAt(pageId,-1)
-        fn_datetime='outputFiles/'+pageId+'_human_paths.dat'
-        if (write2file):
-            f = open(fn_datetime,'w')
-            for row in srcNdestPageIds:
-                csv.writer(f).writerow(row) #f.write(row)
-            f.close()
-            print 'Done writing results to file io'
-        else:
-            data = []
-            for row in srcNdestPageIds:
-                data.append(row)
-            df = pd.DataFrame(data)
-            df.columns = ['game_uuid','userid','src_pageid','ns','endPageTitle','clicks']
-            df.to_csv(fn_datetime) #print df.head()
-
-            ## Now find shortest path score to each of the userid.game.end_page
-            #endPageId = ssspScoreToEndpageIn(df['game_uuid'][0])
-            #print 'clicks,  userid, game_uuid, sssp_score'
-            #localFile = '%s/sssp_%s.txt' % (args.directory,pageId)
-            #print localFile
-            #print '%s, %s, %s, %s' % (df['clicks'][0], df['userid'][0], df['game_uuid'][0], find_sssp_score(endPageId,localFile))
+    ## get games
+    for srcnode in srcNodes: 
+        if not(srcnode.isdigit()):
+            continue
+        results = gamesWithSourceNode(srcnode,-1)
+        data=  np.array(results) 
+        df = pd.DataFrame(data, columns=['src_pg','game','end_pg'])
+        #print df.head()
+        outFname='/home/saguinag/CategoryPaths/gamesDatafiles/'+srcnode+\
+                    '_wpgame_games.dat'
+        df.to_csv(outFname, sep=',',mode='w',encoding='utf-8',index=False)
+        df = None 
     print 'Done.'
+            
+"""
+    ## Find the shortest path score to end_page
+    src_pg = filenames.group(1)
+    # output filename 
+    
+    print output_file
+
+# write out to file
+    f = open(output_file,'w')
+    for end_pg in df['end_pg']:
+        end_pg_score = find_sssp_score(end_pg,args.filename)
+        if end_pg_score is None:
+            row_2_print = result.group(1)+'\t'+end_pg+'\t0'
+            csv.writer(f).writerow([row_2_print])
+        else:
+            endpg_score = re.split(r'\t+',find_sssp_score(end_pg,args.filename).rstrip('\n\r'))
+            #row_2_print = [result.group(1), re.split(r'\t+',find_sssp_score(end_pg,args.filename).rstrip('\n\r'))]
+            csv.writer(f).writerow([result.group(1),endpg_score[0],endpg_score[1]])
+        print '.'
+        
+    f.close()
+"""

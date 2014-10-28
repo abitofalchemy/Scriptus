@@ -34,11 +34,17 @@ def find_sssp_score(end_pageid,sssp_file):
         sssp_file full path to file
     """
     with open(sssp_file, "r+b") as f:
-        map = mmap.mmap(f.fileno(), 0, prot=mmap.PROT_READ)
+        data = mmap.mmap(f.fileno(), 0, prot=mmap.PROT_READ)
+        # regular expressions work too!
+        m = re.search("small", data)
+        print m.start(), m.group()    
+   
+   """
         for line in iter(map.readline, ""):
-            if line.startswith(end_pageid+'\t'):
+            #if line.startswith(end_pageid+'\t'):
+            if line.startswith('%s\t'% end_pageid):
                 return line
-
+    """
 
 def getFilenames(inDirPath):    
     
