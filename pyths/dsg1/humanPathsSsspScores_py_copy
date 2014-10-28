@@ -3,18 +3,24 @@
 # -*- coding: utf-8 -*-
 # http://www.thisisthegreenroom.com/2011/installing-python-numpy-scipy-matplotlib-and-ipython-on-lion/
 # -*--*--*--*--*--*--*--*-
-# human_paths_src2dest_scores.py 
-#   Human paths: for a game with starting page (page_id) ource and
+# humanPathsSsspScores.py 
+#   given sssp folder, for each source node load the corresponding sssp,human paths 
+#   data files, find the end_page id.  For the end_page ids list, find the sssp score in the 
+#   sssp file 
 
 import os
 import sys
 import MySQLdb 
 from wikipediagame import humanPaths4GameStartingAt
+from wikipediagame import ssspScoreToEndpageIn
+import numpy as np
+import pandas as pd
 import glob
 import re
 import argparse
 import datetime
 from itertools import groupby
+from sssp_src2dest_score import find_sssp_score
 import csv
 
 #--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|
@@ -104,45 +110,54 @@ def endpage_pageid_gameuuid_4sssp(wp_page_id):
 ##  main
 ###############################################################
 if __name__ == "__main__":
-    """ human_paths_src2dest_scores.py
-        Finds human (userid) paths for a given game with given staring page
+    """ humanPathsSsspScores.py 
         
         input: sssp folder 
         
-        1.  For each file in the sssp folder, get the source 'page_id', use it to query wikipediagame
-        and wikipedia to obtain the the number of clicks 
-        
-        2.  Using the source page_id, get games that have that as the starting page, find the 
-        end_page and within the input filename, find the sssp score
         Outputs: 
     """
+    debug = True
     parser = argparse.ArgumentParser(description='py pub crawler...')
-    parser.add_argument('directory',help='directory to use',action='store')
+    parser.add_argument('directory',help='directory to use for sssp files',action='store')
+    parser.add_argument('humanpathsdir',help='directory where human paths',action='store')
 
     args = parser.parse_args()
     fns  = getFilenames(args.directory)
-    page_id_set =[] # holds the list of source page_ids
+    hpfns  = getFilenames(args.humanpathsdir)
     
-    for filename in fns:
-        #root, ext = os.path.splitext(filename)
-        #if (filename.startswith("sssp_") and filename.endswith(".txt")):
-        result = re.search('sssp_(.*).txt', filename)
-        page_id_set.append(result.group(1))
-    
-    write2file = 1.0
-    for pageId in page_id_set:
-        #human_paths = endpage_pageid_gameuuid_4sssp(pageId)
-        #srcNdestPageIds = src_end_pageids_4sssp(pageId)
-        srcNdestPageIds = humanPaths4GameStartingAt(pageId,-1)
-        if (write2file):
-            fn_datetime='outputFiles/human_paths_src_'+pageId+'.txt'
-            f = open(fn_datetime,'w')
-            for row in srcNdestPageIds:
-                csv.writer(f).writerow(row) #f.write(row)
-            f.close()
-            print 'Done writing results to file io'
-        else:
-            print srcNdestPageIds
-            break
+    if debug: print fns[:4]
+    if debug: print hpfns[:4]
 
-    print 'Done.'
+    page_id_set = [] ## declare a list source page ids
+    for filename in fns:
+        result = re.search('sssp_(.*).txt', filename)
+        if result is not None:
+            page_id_set.append(result.group(1))
+            #hpfile_set.append([s for s in hpfns if result.group(1) in s])
+    srcPageIds     = np.array(page_id_set)
+    if debug: print '\n> Isolated the source page_ids'
+
+    for srcNode in srcPageIds:
+        #if not (srcNode == '9475228'):
+        ## for each source node
+        print srcNode 
+        pathFile = [s for s in hpfns if srcNode in s]
+        if not (not pathFile):
+            inputFile = args.humanpathsdir+'/'+pathFile[0]
+            df0 =pd.read_csv(inputFile, sep=',',index_col=0)
+            outFile = '/home/saguinag/knowledgeNetNav/dataFiles/'+srcNode+'_hp_guuid_uuid_sssp.csv' 
+            if not os.path.exists(outFile):
+                f = open(outFile,'wb')
+                for guuid in df0['game_uuid']:
+                    endPageId = ssspScoreToEndpageIn(guuid)
+                    if debug: print '> endPageId: ',endPageId[0][0]
+                    ssspFile = [s for s in fns if srcNode in s][0]
+                    if debug: print '> sssp file to search:',ssspFile
+                    ssspScore = re.split(r'\t+',find_sssp_score(endPageId[0][0],args.directory+'/'+ssspFile))
+                    hpClicks =  df0[df0['game_uuid'].str.contains(guuid)]['clicks'].iloc[0]
+                    hpUser   =  df0[df0['game_uuid'].str.contains(guuid)]['userid'].iloc[0]
+                    if debug: print  '%s, %s, %s, %s' % (hpClicks,guuid,hpUser,ssspScore[1])
+                    csv.writer(f).writerow([hpClicks,guuid,hpUser, ssspScore[1][0]])
+                #break
+                f.close()
+    print 'Done. Finished all source nodes'

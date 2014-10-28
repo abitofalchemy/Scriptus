@@ -9,10 +9,140 @@
 import sys
 import MySQLdb 
 
+def wpgame(query):
+    server='localhost'
+    conn = None
+        
+    try:
+        conn = MySQLdb.Connection(server, 'saguinag', 'dsg1!0xB', 'wikipediagame')
+        cursor = conn.cursor()
+            
+        cursor.execute(query)
+        conn.commit()
+
+        results = cursor.fetchall()
+        #print results
+        for row in results:
+            print row;
+    except MySQLdb.Error, e:
+        print "Error %d: %s" % (e.args[0], e.args[1])
+        sys.exit(1)
+    finally:
+        if conn:
+            conn.close()
+        return results
+def clickedPagesForGameAndUser(game_uuid, userid):
+    """ input:  wikipediagame: uuid, userid
+                output: number of cliked pages for a given game and userid
+                """
+    server='localhost'
+    conn = None
+
+    try:
+        conn = MySQLdb.Connection(server, 'saguinag', 'dsg1!0xB', 'wikipediagame')
+        cursor = conn.cursor()
+
+        #query ="SELECT /*uuid,end_page,*/ w.page_id from wikipediagame.game_game \
+        query ="select count(clicked_page) \
+                from game_click \
+                WHERE game_uuid='%s' AND userid='%s';" % game_uuid
+
+        cursor.execute(query)
+        conn.commit()
+
+        results = cursor.fetchall()
+
+    except MySQLdb.Error, e:
+        print "Error %d: %s" % (e.args[0], e.args[1])
+        sys.exit(1)
+    finally:
+        if conn:
+            conn.close()
+        return results
+    """ Done """
+ 
+def usersPlayedNFinishedGame( game_uuid ):
+    """ input:  wikipediagame uuid
+		output: users that played and finished the game & nbr of clicks
+                it took them.
+		"""
+    server='localhost'
+    conn = None
+        
+    try:
+        conn = MySQLdb.Connection(server, 'saguinag', 'dsg1!0xB', 'wikipediagame')
+        cursor = conn.cursor()
+        """
+        query ="select wc.userid \
+                from game_click AS wc \
+                inner JOIN (SELECT userid, uuid, start_page, end_page, gc.clicked_page \
+                      from game_game \
+                      JOIN wikipediagame.game_click gc ON uuid=gc.game_uuid \
+                      WHERE uuid='%s' AND gc.clicked_page=start_page\
+                     ) as started \
+                ON wc.game_uuid=started.uuid And wc.userid=started.userid \
+                Where wc.clicked_page=started.end_page;" % game_uuid
+        """
+        query ="Select UID.userid, count(gc2.clicked_page) from \
+                (select wc.game_uuid, wc.userid \
+                from game_click AS wc \
+                inner JOIN (SELECT userid, uuid, start_page, end_page, gc.clicked_page \
+                      from game_game \
+		      JOIN wikipediagame.game_click gc ON uuid=gc.game_uuid \
+                      WHERE uuid='%s' AND gc.clicked_page=start_page\
+                     ) as started \
+                ON wc.game_uuid=started.uuid And wc.userid=started.userid \
+                Where wc.clicked_page=started.end_page \
+                ) As UID Inner Join game_click gc2 ON gc2.game_uuid = UID.game_uuid \
+                AND gc2.userid = UID.userid group by UID.userid;" % game_uuid
+
+        cursor.execute(query)
+        conn.commit()
+
+        results = cursor.fetchall() 
+	
+    except MySQLdb.Error, e:
+        print "Error %d: %s" % (e.args[0], e.args[1])
+        sys.exit(1)
+    finally:
+        if conn:
+            conn.close()
+        return results	
+	 
+def ssspScoreToEndpageIn(game_uuid):
+    server='localhost'
+    conn = None
+    
+    try:
+        conn = MySQLdb.Connection(server, 'saguinag', 'dsg1!0xB', 'wikipedia')
+        cursor = conn.cursor()
+        
+        #query ="SELECT /*uuid,end_page,*/ w.page_id from wikipediagame.game_game \
+        query ="SELECT w.page_id from wikipediagame.game_game \
+                join wikipedia.page w ON w.page_title=end_page \
+                WHERE uuid='%s' AND w.page_namespace=0;" % game_uuid
+
+        cursor.execute(query)
+        conn.commit()
+
+        results = cursor.fetchall()
+        #print results
+        #for row in results:
+        #    print row;
+    except MySQLdb.Error, e:
+        print "Error %d: %s" % (e.args[0], e.args[1])
+        sys.exit(1)
+    finally:
+        if conn:
+            conn.close()
+        return results
+
+
 def humanPaths4GameStartingAt(srcPageId,limit):
     server='localhost'
     conn = None
-    print '-----------------------------------\n',limit
+    #print '-----------------------------------\n',limit
+   
     try:
         conn = MySQLdb.Connection(server, 'saguinag', 'dsg1!0xB', 'wikipedia')
         cursor = conn.cursor()
@@ -87,13 +217,13 @@ def gamesWithSourceNode(srcPageId,limit):
                      FROM wikipediagame.game_game \
                      JOIN wikipedia.page W ON W.page_title=start_page \
                      JOIN wikipedia.page W2 ON W2.page_title=end_page \
-                     WHERE W.page_id='%s';" % (srcPageId)
+                     WHERE W.page_id='%s' AND W2.page_namespace = 0;" % (srcPageId)
         else :
             query = "SELECT W.page_id, uuid, W2.page_id \
                  FROM wikipediagame.game_game \
                  JOIN wikipedia.page W ON W.page_title=start_page \
                  JOIN wikipedia.page W2 ON W2.page_title=end_page \
-                 WHERE W.page_id='%s' LIMIT %d ;" % (srcPageId,limit)
+                 WHERE W.page_id='%s' AND W2.page_namespace=0 LIMIT %d ;" % (srcPageId,limit)
 
 
         cursor.execute(query)
@@ -118,7 +248,14 @@ def buildConnectionString(params):
     Returns string."""
     return ";".join(["%s=%s" % (k, v) for k, v in params.items()])
 if __name__ == "__main__":
-	#import sys
-	#fib(int(sys.argv[1]))
-	print gamesWithSourceNode('1018340',10)
-	print humanPaths4GameStartingAt('1018340',-1)
+    #import sys
+    #fib(int(sys.argv[1]))
+    #for row in gamesWithSourceNode('1018340',10):
+    #    print row
+    #for row in humanPaths4GameStartingAt('1018340',10):
+    #    print row
+    for row in usersPlayedNFinishedGame('02bc94754e5b4bc4917edf7933fc2ac4'):
+        print row
+    #query = "Select start_page, end_page, userid, uuid from wikipediagame.game_game where \
+    #         where uuid= '02bc94754e5b4bc4917edf7933fc2ac4' limit 10;"
+    #wpgame(query)

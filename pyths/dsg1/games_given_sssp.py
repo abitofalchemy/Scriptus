@@ -3,11 +3,8 @@
 # -*- coding: utf-8 -*-
 # http://www.thisisthegreenroom.com/2011/installing-python-numpy-scipy-matplotlib-and-ipython-on-lion/
 # -*--*--*--*--*--*--*--*-
-# src_dest_pageid_sssp_score.py 
-# sssp_src2dest_score.py
-#   source and destination page_id sssp score
-#   04Oct14/SA: for a given sssp file, we get SP scores of games that start with this 
-#   source page_id 
+#   games_given_sssp.py
+#       return the games that start at given set of source nodes
 
 import os
 import sys
@@ -34,17 +31,12 @@ def find_sssp_score(end_pageid,sssp_file):
         sssp_file full path to file
     """
     with open(sssp_file, "r+b") as f:
-        data = mmap.mmap(f.fileno(), 0, prot=mmap.PROT_READ)
-        # regular expressions work too!
-        m = re.search("small", data)
-        print m.start(), m.group()    
-   
-   """
+        map = mmap.mmap(f.fileno(), 0, prot=mmap.PROT_READ)
         for line in iter(map.readline, ""):
             #if line.startswith(end_pageid+'\t'):
             if line.startswith('%s\t'% end_pageid):
                 return line
-    """
+
 
 def getFilenames(inDirPath):    
     
@@ -132,52 +124,43 @@ def endpage_pageid_gameuuid_4sssp(wp_page_id):
 ##  main
 ###############################################################
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='py pub crawler...')
-    #parser.add_argument('directory',help='directory to use',action='store')
-    parser.add_argument('filename',help='file to process',action='store')
+    DBG = False
+    parser = argparse.ArgumentParser(description='games for a given sssp filename')
+    parser.add_argument('dirPath',help='path to sssp filenames',action='store')
 
     args = parser.parse_args()
-#   fns  = getFilenames(args.directory)
-#   page_id_set =[]
-#   for filename in fns:
-#       #root, ext = os.path.splitext(filename)
-#       #if (filename.startswith("sssp_") and filename.endswith(".txt")):
-#       result = re.search('sssp_(.*).txt', filename)
-#       page_id_set.append(result.group(1))
-#   
-#   write2file = 1.0
-#   for pageId in page_id_set:
-#       #human_paths = endpage_pageid_gameuuid_4sssp(pageId)
-#       srcNdestPageIds = src_end_pageids_4sssp(pageId)
-#       if (write2file):
-#           fn_datetime='outputFiles/'+pageId+'_src_dest_pageIds_'+datetime.date.today().strftime("%d%b%y")+".txt"
-#           f = open(fn_datetime,'w')
-#           for row in srcNdestPageIds:
-#               csv.writer(f).writerow(row) #f.write(row)
-#           f.close()
-#           print 'Done writing results to file io'
-#    print 'Done.'
-
-###############################################################################
-    result = re.search('sssp_(.*).txt', args.filename)
-
-    print 'Script arguments:'
-    print '\t'+args.filename
     
-    print '\nSource node (wikipedia.game.page_id): '+result.group(1)
+    #filenames = re.search('sssp_(.*).txt', getFilenames(args.dirPath))
+    srcNodes = list()
+    results = []
+    filenames   = getFilenames(args.dirPath)
 
-    print 'Games with source node (%s): ' % result.group(1)
-    
-    results = gamesWithSourceNode(result.group(1),-1)
-    data=  np.array(results) 
-    df = pd.DataFrame(data, columns=['src_pg','game','end_pg'])
-    print df.head()
+    ## extract source nodes 
+    for fn in filenames:
+        srcNodes.append(re.search('sssp_(.*).txt',fn).group(1))
 
-    ### Find the shortest path score to end_page
-    src_pg = result.group(1)
+    ## get games
+    for srcnode in srcNodes: 
+        if not(srcnode.isdigit()):
+            continue
+        results = gamesWithSourceNode(srcnode,-1)
+        data=  np.array(results) 
+        df = pd.DataFrame(data, columns=['src_pg','game','end_pg'])
+        #print df.head()
+        outFname='/home/saguinag/CategoryPaths/gamesDatafiles/'+srcnode+\
+                    '_wpgame_games.dat'
+        df.to_csv(outFname, sep=',',mode='w',encoding='utf-8',index=False)
+        df = None 
+    print 'Done.'
+            
+"""
+    ## Find the shortest path score to end_page
+    src_pg = filenames.group(1)
     # output filename 
-    output_file='outputFiles/'+result.group(1)+'_sp_score_'+datetime.date.today().strftime("%d%b%y")+'.txt'
-    # write out to file
+    
+    print output_file
+
+# write out to file
     f = open(output_file,'w')
     for end_pg in df['end_pg']:
         end_pg_score = find_sssp_score(end_pg,args.filename)
@@ -191,4 +174,4 @@ if __name__ == "__main__":
         print '.'
         
     f.close()
-
+"""

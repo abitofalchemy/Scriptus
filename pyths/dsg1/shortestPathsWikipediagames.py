@@ -11,9 +11,9 @@
 import os
 import sys
 import MySQLdb 
-from wikipediagame import humanPaths4GameStartingAt
-from wikipediagame import ssspScoreToEndpageIn
-from wikipediagame import usersPlayedNFinishedGame
+#from wikipediagame import humanPaths4GameStartingAt
+#from wikipediagame import ssspScoreToEndpageIn
+#from wikipediagame import usersPlayedNFinishedGame
 import numpy as np
 import pandas as pd
 import glob
@@ -21,14 +21,63 @@ import re
 import argparse
 import datetime
 from itertools import groupby
-from sssp_src2dest_score import find_sssp_score
+#from sssp_src2dest_score import find_sssp_score
 import csv
+import mmap
+from collections import namedtuple
+import contextlib
 
 #--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|
 def getFilenames(inDirPath):    
     
     filenames = filter( lambda f: not f.startswith('.'),[f for f in os.listdir(inDirPath) if os.path.isfile(os.path.join(inDirPath, f))])
     return filenames
+
+#--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|
+def find_sssp_score(dest_page_id_lst,sssp_file):
+    """ find_sssp_score
+        needs optimization, maybe bring the
+    parameters:
+    -----------
+        end_pageid
+        sssp_file full path to file
+    """
+    print sssp_file
+    spScore = []
+
+    with open(sssp_file, 'r') as f:
+        with contextlib.closing(mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)) as m:
+            for endPageId in dest_page_id_lst:
+                pattern = re.compile(r'^%s\t' % endPageId,
+                    re.DOTALL | re.IGNORECASE | re.MULTILINE)
+                mp = pattern.search(m)
+                if mp is not None:
+                    spScore.append(mp.group().split('\t')[1])
+                else:
+                    spScore.append(np.nan)
+    
+    """
+    SIZE = 2**24
+    with open(sssp_file,'r') as f:
+        table = build_table(f, SIZE)
+        for endPageId in dest_page_id_lst:
+            print endPageId
+            print search(endPageId,table,f)
+
+    df = pd.read_csv(sssp_file, sep='\t') 
+    df.columns=['dest','score']
+    #print df.head()
+
+
+    for endPageId in dest_page_id_lst:
+        print endPageId
+        for index, row in df.iterrows():
+            if row.dest == endPageId:
+                print row.score
+                spScore.append(row.score)
+                break 
+    """
+    return spScore
 
 #--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|
 def src_end_pageids_4sssp(wp_page_id):
@@ -118,24 +167,40 @@ if __name__ == "__main__":
         Outputs: 
     """
     debug = False 
-    parser = argparse.ArgumentParser(description='py pub crawler...')
-    parser.add_argument('gamesPath',help='directory to games/userids sets',action='store')
-    #parser.add_argument('directory',help='directory to use for sssp files',action='store')
-    #parser.add_argument('humanpathsdir',help='directory where human paths',action='store')
+    parser = argparse.ArgumentParser(description='games for a given sssp filename')
+    parser.add_argument('ssspPath',help='path to sssp filenames',action='store')
+    parser.add_argument('gamesPath',help='path to games filenames',action='store')
 
     args = parser.parse_args()
-    gameFilenameLst  = getFilenames(args.gamesPath)
-    # print gameFilenameLst
+
+    spFilenames = getFilenames(args.ssspPath)
+    gmFilenames = getFilenames(args.gamesPath)
     
-    for inputGameFn in gameFilenameLst:
-        print inputGameFn
-        dfHP = pd.DataFrame() #columns=['game', 'usr', 'clicks'])
-        df = pd.read_csv(args.gamesPath+inputGameFn, sep=',') 
-        df.columns= ['src_pg','game','end_pg'] 
-        # print df.head()
-        
-        ## Now that we have the src and dest nodes, and game, we  extract the
-        ## user that played the game 
+    for spFile in spFilenames:
+        result = re.search('sssp_(.*).txt', spFile)
+        gameDataFile = args.gamesPath+result.group(1)+'_wpgame_games.dat'
+        outGamesSpFn = '/home/saguinag/CategoryPaths/ssspGamesDatFiles/'+ \
+            result.group(1)+'_games_sp.dat'
+        print 'spFile:',spFile
+        if not os.path.exists(outGamesSpFn):
+            #for inputGameFn in gameFilenames:
+            print gameDataFile
+            df = pd.read_csv(gameDataFile, sep=',') 
+            df.columns= ['src_pg','game','end_pg'] 
+            #print df.head()
+            f = open(outGamesSpFn,'wb')
+            ## find the paths for the array end_pg 
+            ssspFileStr = args.ssspPath+'sssp_'+str(df.src_pg[0])+'.txt'
+            #print ssspFileStr
+            spScore = find_sssp_score(df.end_pg, ssspFileStr)	
+            df['sp'] = pd.Series(spScore, index=df.index)
+            #print df.head()
+            df.to_csv(f,sep=',',mode='w',encoding='utf-8',index=False)
+            print 'otuput:', outGamesSpFn
+    #############
+    print "Done."
+"""
+        # for each game (with source and destination) find the  
         userIdLst = []
         iterRow = df.iterrows()
         for i,row in iterRow:
@@ -155,7 +220,6 @@ if __name__ == "__main__":
         dfHP.to_csv(outFname, sep=',',mode='w',encoding='utf-8',index=False)
 
     print 'Done.'
-"""    
 
     hpfns  = getFilenames(args.humanpathsdir)
     
@@ -202,5 +266,12 @@ if __name__ == "__main__":
                 f.close()
                 print '>',outFile
     print 'Done. Finished all source nodes'
+
+
+    ## extract the sssp score for each game
+        for ssspFn in filenames:
+                    print ssspFn
+                            result = re.search('sssp_(.*).txt', ssspFn)
+                                    print result.groups()
 
 """
