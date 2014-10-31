@@ -10,7 +10,7 @@
 
 import os
 import sys
-import MySQLdb 
+#import MySQLdb 
 #from wikipediagame import humanPaths4GameStartingAt
 #from wikipediagame import ssspScoreToEndpageIn
 #from wikipediagame import usersPlayedNFinishedGame
@@ -39,44 +39,26 @@ def find_sssp_score(dest_page_id_lst,sssp_file):
         needs optimization, maybe bring the
     parameters:
     -----------
-        end_pageid
+        dest_page_id_lst: list of end_page_ids
         sssp_file full path to file
     """
-    print sssp_file
+    print 'find_sssp_score -----------------------------------'
     spScore = []
 
+    size = os.stat(sssp_file).st_size
     with open(sssp_file, 'r') as f:
-        with contextlib.closing(mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)) as m:
+        with contextlib.closing(mmap.mmap(f.fileno(), size, access=mmap.ACCESS_READ)) as m:
             for endPageId in dest_page_id_lst:
-                pattern = re.compile(r'^%s\t' % endPageId,
-                    re.DOTALL | re.IGNORECASE | re.MULTILINE)
-                mp = pattern.search(m)
-                if mp is not None:
-                    spScore.append(mp.group().split('\t')[1])
+                #print endPageId
+                gotit = re.search(r"\s%s\t\d"%endPageId,m)
+                #print gotit.group()
+                if gotit is None:
+                    #print endPageId, 'dud'
+                    spScore.append(np.inf)
                 else:
-                    spScore.append(np.nan)
-    
-    """
-    SIZE = 2**24
-    with open(sssp_file,'r') as f:
-        table = build_table(f, SIZE)
-        for endPageId in dest_page_id_lst:
-            print endPageId
-            print search(endPageId,table,f)
+                    #print gotit.group().split()
+                    spScore.append(gotit.group().split()[1])
 
-    df = pd.read_csv(sssp_file, sep='\t') 
-    df.columns=['dest','score']
-    #print df.head()
-
-
-    for endPageId in dest_page_id_lst:
-        print endPageId
-        for index, row in df.iterrows():
-            if row.dest == endPageId:
-                print row.score
-                spScore.append(row.score)
-                break 
-    """
     return spScore
 
 #--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|
@@ -175,13 +157,11 @@ if __name__ == "__main__":
 
     spFilenames = getFilenames(args.ssspPath)
     gmFilenames = getFilenames(args.gamesPath)
-    
+    print '--(hortestPathsWikipediagames.py)---------------------------------------\n' 
     for spFile in spFilenames:
         result = re.search('sssp_(.*).txt', spFile)
         gameDataFile = args.gamesPath+result.group(1)+'_wpgame_games.dat'
-        outGamesSpFn = '/home/saguinag/CategoryPaths/ssspGamesDatFiles/'+ \
-            result.group(1)+'_games_sp.dat'
-        print 'spFile:',spFile
+        outGamesSpFn = 'ssspGamesDatFiles/'+result.group(1)+'_games_sp.dat'
         if not os.path.exists(outGamesSpFn):
             #for inputGameFn in gameFilenames:
             print gameDataFile
@@ -194,7 +174,7 @@ if __name__ == "__main__":
             #print ssspFileStr
             spScore = find_sssp_score(df.end_pg, ssspFileStr)	
             df['sp'] = pd.Series(spScore, index=df.index)
-            #print df.head()
+            print df.head()
             df.to_csv(f,sep=',',mode='w',encoding='utf-8',index=False)
             print 'otuput:', outGamesSpFn
     #############

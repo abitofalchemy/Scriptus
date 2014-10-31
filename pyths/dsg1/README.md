@@ -1,3 +1,7 @@
+spvshpAnalysis.py
+  For each humanPaths.file, we find the corresponding SP for a given game
+  
+
 read_dir_filenames.py
 mysql_dsg1.py
 26Sep14_1101AMwp_humanpaths.py
