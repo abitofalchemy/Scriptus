@@ -8,7 +8,7 @@ import os
 import pandas as pd
 import numpy as np
 import matplotlib
-matplotlib.use('pdf')
+matplotlib.use('svg')
 import matplotlib.pyplot as plt
 import sys
 import glob
@@ -21,7 +21,7 @@ from scipy import stats
 
 
 #--------|--------|--------|--------|--------|--------|--------|--------|--------|--------
-def save_fig(path, ext='pdf', close=True, verbose=True):
+def save_fig(path, ext='svg', close=True, verbose=True):
 	"""Save a figure from pyplot.
  
 	Parameters
@@ -33,7 +33,7 @@ def save_fig(path, ext='pdf', close=True, verbose=True):
 	ext : string (default='pdf')
 	The file extension. This must be supported by the active
 	matplotlib backend (see matplotlib.backends module). Most
-	backends support 'png', 'pdf', 'ps', 'eps', and 'svg'.
+	backends support 'svg', 'pdf', 'ps', 'eps', and 'svg'.
  
 	close : boolean (default=True)
 	Whether to close the figure after saving. If you want to save
@@ -77,11 +77,16 @@ def getFilenames(inDirPath):
     return filenames
 
 def scatter_plot(xvec, yvec, plt_labels):
-	#print 'save',plt_labels[2]
-	plt.scatter(xvec, yvec,lw=0.5, cmap='hot', alpha=0.3)#
-	ax.set_xlabel(plt_labels[0])
-	ax.set_ylabel(plt_labels[1])
-	ax.set_title(plt_labels[2])
+	plt.scatter(xvec, yvec,lw=0.5, cmap='hot', alpha=0.3, edgecolor='w')#
+        plt.yscale('log')
+        ax.spines['right'].set_visible(False)
+        ax.spines['top'].set_visible(False)
+#       axis
+        x1,x2,y1,y2 = plt.axis()
+        plt.axis((x1,x2,0,200))
+	#ax.set_xlabel(plt_labels[0])
+	#ax.set_ylabel(plt_labels[1])
+	#ax.set_title(plt_labels[2])
 	#save_fig('figure_plot')	
 	#save_fig('figure_plot')
 	return
@@ -115,8 +120,8 @@ if __name__ == "__main__":
     ## for humanPath files 
     hpDataFilenames = getFilenames(args.inHPpath)
     spDataFilenames = getFilenames(args.inSPpath)
-    outputDF  = pd.DataFrame(columns=('game','clicks','sp'))
-    overallDF = pd.DataFrame(columns=('game','clicks','sp'))
+    outputDF  = pd.DataFrame(columns=('game','userid','clicks','sp'))
+    overallDF = pd.DataFrame(columns=('game','userid','clicks','sp'))
     
     fig = plt.figure()
     ax = fig.add_subplot(111)
@@ -133,13 +138,13 @@ if __name__ == "__main__":
 		if os.path.exists(spFile):
 			spDatFrm = pd.read_csv(spFile, header=0, sep=',')
             #print spDatFrm.head()
-            #print hpDatFrm.head()
+			#print hpDatFrm.head()
 
 		for index, row in hpDatFrm.iterrows():
-			## find the correspoding SP where the game matches 
+			## find the corresponding SP where the game matches 
 			output = (spDatFrm.loc[spDatFrm.game == row.game]).sp
 			## Build new data_frame
-			outputDF.loc[index] =[row.game, row.clicks, output.iat[0]] 
+			outputDF.loc[index] =[row.game, row.usr, row.clicks, output.iat[0]] 
 			#break
 		
 		#print outputDF.shape
@@ -148,9 +153,20 @@ if __name__ == "__main__":
 		#print overallDF.shape
 		#break
 		#if filename == '22462_wpgame_games.dataframe': break
+		
     scatter_plot(overallDF.sp, overallDF.clicks, ['SP','Clicks','100 sssp files'])
+    overallDF.to_csv('output.csv', sep=',',mode='w',encoding='utf-8',index=False)
+    print "Clicks summary:", overallDF.clicks.min(), overallDF.clicks.max(), overallDF.clicks.mean()
     save_fig('figure_plot')
-    print overallDF.shape
+    
+    ## plot distribution of the shorterst paths
+    plt.hist(overallDF.sp, bins=np.linspace(0,9,10*2))
+    remove_border()
+    plt.xlim(0,10)
+    plt.show()
+
+    
+    print 'Done!'
 """
 	if args.output == 'plot':
 		fig = plt.figure()

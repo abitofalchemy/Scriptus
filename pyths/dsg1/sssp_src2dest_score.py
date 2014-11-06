@@ -39,7 +39,7 @@ def find_sssp_score(end_pageid,sssp_file):
         m = re.search("small", data)
         print m.start(), m.group()    
    
-   """
+    """
         for line in iter(map.readline, ""):
             #if line.startswith(end_pageid+'\t'):
             if line.startswith('%s\t'% end_pageid):

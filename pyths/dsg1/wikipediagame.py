@@ -4,7 +4,7 @@
 # http://www.thisisthegreenroom.com/2011/installing-python-numpy-scipy-matplotlib-and-ipython-on-lion/
 # -*--*--*--*--*--*--*--*-
 # wikipediagame.py 
-#	
+#    
 
 import sys
 import MySQLdb 
@@ -31,6 +31,7 @@ def wpgame(query):
         if conn:
             conn.close()
         return results
+
 def clickedPagesForGameAndUser(game_uuid, userid):
     """ input:  wikipediagame: uuid, userid
                 output: number of cliked pages for a given game and userid
@@ -63,9 +64,9 @@ def clickedPagesForGameAndUser(game_uuid, userid):
  
 def usersPlayedNFinishedGame( game_uuid ):
     """ input:  wikipediagame uuid
-		output: users that played and finished the game & nbr of clicks
+        output: users that played and finished the game & nbr of clicks
                 it took them.
-		"""
+        """
     server='localhost'
     conn = None
         
@@ -83,32 +84,39 @@ def usersPlayedNFinishedGame( game_uuid ):
                 ON wc.game_uuid=started.uuid And wc.userid=started.userid \
                 Where wc.clicked_page=started.end_page;" % game_uuid
         """
-        query ="Select UID.userid, count(gc2.clicked_page) from \
+        ## can we split users that played the same game multiple times?
+        """  query ="Select UID.userid, count(gc2.clicked_page) from \
                 (select wc.game_uuid, wc.userid \
                 from game_click AS wc \
                 inner JOIN (SELECT userid, uuid, start_page, end_page, gc.clicked_page \
                       from game_game \
-		      JOIN wikipediagame.game_click gc ON uuid=gc.game_uuid \
+              JOIN wikipediagame.game_click gc ON uuid=gc.game_uuid \
                       WHERE uuid='%s' AND gc.clicked_page=start_page\
                      ) as started \
                 ON wc.game_uuid=started.uuid And wc.userid=started.userid \
                 Where wc.clicked_page=started.end_page \
                 ) As UID Inner Join game_click gc2 ON gc2.game_uuid = UID.game_uuid \
                 AND gc2.userid = UID.userid group by UID.userid;" % game_uuid
+        """
+        query ="SELECT gc.game_uuid, gc.userid, gg.start_page, gg.end_page, gc.clicked_page \
+                from game_click as gc \
+                JOIN game_game as gg ON gg.uuid=gc.game_uuid \
+                WHERE gc.game_uuid='%s' AND gc.userid='Guest0C1CE13FC98742B58C90B35DC';" % game_uuid
 
         cursor.execute(query)
         conn.commit()
 
         results = cursor.fetchall() 
-	
+    
     except MySQLdb.Error, e:
         print "Error %d: %s" % (e.args[0], e.args[1])
         sys.exit(1)
     finally:
         if conn:
             conn.close()
-        return results	
-	 
+        
+    return results    
+     
 def ssspScoreToEndpageIn(game_uuid):
     server='localhost'
     conn = None
@@ -248,14 +256,18 @@ def buildConnectionString(params):
     Returns string."""
     return ";".join(["%s=%s" % (k, v) for k, v in params.items()])
 if __name__ == "__main__":
-    #import sys
-    #fib(int(sys.argv[1]))
-    #for row in gamesWithSourceNode('1018340',10):
-    #    print row
-    #for row in humanPaths4GameStartingAt('1018340',10):
-    #    print row
-    for row in usersPlayedNFinishedGame('02bc94754e5b4bc4917edf7933fc2ac4'):
-        print row
-    #query = "Select start_page, end_page, userid, uuid from wikipediagame.game_game where \
-    #         where uuid= '02bc94754e5b4bc4917edf7933fc2ac4' limit 10;"
-    #wpgame(query)
+    tstInt = 3
+
+    if tstInt == 0:
+        for row in gamesWithSourceNode('1018340',10):
+            print row
+    elif tstInt == 1:
+        for row in humanPaths4GameStartingAt('1018340',10):
+            print row
+    elif tstInt == 2: # find games played and finished by user 
+        for row in usersPlayedNFinishedGame('2f8aa3635a8749f1b01af5d0e0af8d42'):
+            print row
+    elif tstInt == 3: # game completed by 
+        for row in usersPlayedNFinishedGame('2f8aa3635a8749f1b01af5d0e0af8d42'):
+            print row
+            
