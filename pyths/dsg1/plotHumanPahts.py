@@ -37,7 +37,7 @@ def plotHumanPaths(path):
     
     return
 
-def save_fig(path, ext='png', close=True, verbose=True):
+def save_fig(path, ext='svg', close=True, verbose=True):
 	"""Save a figure from pyplot.
  
 	Parameters

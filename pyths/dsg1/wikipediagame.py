@@ -213,7 +213,7 @@ def humanPaths4GameStartingAt(srcPageId,limit):
         return results
 
 
-def gamesWithSourceNode(srcPageId,limit):
+def gamesWithSourceNode(srcPageId,limit = -1):
     server='localhost'
     conn = None
     

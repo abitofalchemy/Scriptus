@@ -28,3 +28,4 @@ REFERENCES:
 
 Averaging data from multiple data files in Python with pandas
 	http://stackoverflow.com/questions/11174367/averaging-data-from-multiple-data-files-in-python-with-pandas
+http://effbot.org/librarybook/mmap.htm
