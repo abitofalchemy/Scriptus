@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/python
 
 # -*- coding: utf-8 -*-
 # http://www.thisisthegreenroom.com/2011/installing-python-numpy-scipy-matplotlib-and-ipython-on-lion/
@@ -9,6 +9,8 @@
 import os
 import pandas as pd
 import numpy as np
+import matplotlib
+matplotlib.use('pdf')
 import matplotlib.pyplot as plt
 
 import sys
@@ -20,7 +22,7 @@ from itertools import groupby
 import csv
 
 #--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|
-def save_fig(path, ext='png', close=True, verbose=True):
+def save_fig(path, ext='pdf', close=True, verbose=True):
 	"""Save a figure from pyplot.
  
 	Parameters
@@ -91,20 +93,44 @@ if __name__ == "__main__":
     parser.add_argument('input_file',help='file to use',action='store')
 
     args = parser.parse_args()
-    print args.input_file
+    print "Input file:", args.input_file
 
-##  read input file
-    df =pd.read_csv(args.input_file,sep='\t')
-    print df.head()
+	##  read input file
+    data = []
+    with open(args.input_file, 'r') as f:
+        for line in f:
+            data.append(line.rstrip().split(","))
+    df =pd.DataFrame(data,columns=['path','game','sp'])
+    df.convert_objects(convert_numeric=True)
+    #print df.convert_objects(convert_numeric=True).dtypes
+    #print A.convert_objects(convert_numeric=True).describe()
+    if 'score' in df.columns:
+        pd.options.display.mpl_style = 'default'
+        fig = plt.figure()
+        ax = plt.gca()
 
-    pd.options.display.mpl_style = 'default'
-    fig = plt.figure()
-    ax = plt.gca()
-    ax.scatter(df['score'], df['dest'])#/*, c='blue', alpha=0.05, edgecolors='none'*/)
-    ax.set_yscale('log')
-    ax.set_xlim([0, 5])
-    #plt.xlim(0,5)
-    save_fig('figure_plot')
+    	ax.scatter(df['score'], df['dest'])#/*, c='blue', alpha=0.05, edgecolors='none'*/)
+    	ax.set_yscale('log')
+    	ax.set_xlim([0, 5])
+    	#plt.xlim(0,5)
+    	save_fig('figure_plot')
+    else:
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+
+        hs = ax.hist(df.sp.convert_objects(convert_numeric=True).values,alpha=0.8 )
+
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        #ax.spines['bottom'].set_visible(False)
+
+        #ax.xaxis.set_ticks_position('none')
+        #ax.yaxis.set_ticks_position('none')
+        plt.title('Shortest Paths')
+        ax.set_ylabel('count') #plt.ylabel('Count')
+        ax.set_xlabel('$\mathcal{P}$ (n)') #plt.xlabel('Path Length (L)')
+        save_fig('../public_html/figure_plot')
+        print'Done'
 
 
 # http://stackoverflow.com/questions/8151684/how-to-read-lines-from-mmap-file-in-python
