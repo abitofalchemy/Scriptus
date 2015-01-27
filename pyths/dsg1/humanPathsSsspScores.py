@@ -113,94 +113,82 @@ def endpage_pageid_gameuuid_4sssp(wp_page_id):
 if __name__ == "__main__":
     """ humanPathsSsspScores.py 
         
-        input: sssp folder 
+        input: games folder
         
         Outputs: 
     """
-    debug = False 
-    parser = argparse.ArgumentParser(description='py pub crawler...')
-    parser.add_argument('gamesPath',help='directory to games/userids sets',action='store')
-    #parser.add_argument('directory',help='directory to use for sssp files',action='store')
-    #parser.add_argument('humanpathsdir',help='directory where human paths',action='store')
+ 
 
-    args = parser.parse_args()
-    gameFilenameLst  = getFilenames(args.gamesPath)
-    # print gameFilenameLst
-    
-    for inputGameFn in gameFilenameLst:
-        print inputGameFn
+    case = 1
+    if case == 0:
+        parser = argparse.ArgumentParser(description='py human Paths Sssp Scores...')
+        parser.add_argument('gamesPath',help='directory to games/userids sets',action='store')
+        #parser.add_argument('directory',help='directory to use for sssp files',action='store')
+        #parser.add_argument('humanpathsdir',help='directory where human paths',action='store')
+
+        args = parser.parse_args()
+        gameFilenameLst  = getFilenames(args.gamesPath)
+
+        for inputGameFn in gameFilenameLst:
+            print inputGameFn
+            dfHP = pd.DataFrame() #columns=['game', 'usr', 'clicks'])
+            df = pd.read_csv(args.gamesPath+inputGameFn, sep=',') 
+            df.columns= ['src_pg','game','end_pg'] 
+
+            ## Now that we have the src and dest nodes, and game, we  extract the
+            ## user that played the game 
+            userIdLst = []
+            iterRow = df.iterrows()
+            for i,row in iterRow:
+                print row.game,':'
+                userIdLst = np.array(usersPlayedNFinishedGame( row.game )) #potentially multiple
+                print len(userIdLst)
+                if len(userIdLst)>1:
+                    for usrId in userIdLst:
+                        #print row.game, usrId[0], usrId[1]
+                        dicts = {'game': row.game, 'usr': usrId[0], 'clicks': usrId[1]}
+                        print "dicts:", dicts #dfHP.append({"game": 34, "usr": 23, "clicks": 44}, ignore_index=True)
+                        dfHP  = dfHP.append(dicts, ignore_index=True)
+                else:
+                    print 'length 0'
+                        
+            print dfHP.head()
+            break
+    #        ## construct a unique output filename
+    #        outFname = re.split(r'.dat',inputGameFn.rstrip())
+    #        outFname = '/home/saguinag/CategoryPaths/hpDatafiles/'+outFname[0]+'.dataframe'
+    #        dfHP.to_csv(outFname, sep=',',mode='w',encoding='utf-8',index=False)
+    elif case == 1:
+        pgID = sys.argv[1]
+        case = 1
+        gamesPath = "gamesDatafiles/"
+
         dfHP = pd.DataFrame() #columns=['game', 'usr', 'clicks'])
-        df = pd.read_csv(args.gamesPath+inputGameFn, sep=',') 
-        df.columns= ['src_pg','game','end_pg'] 
-        # print df.head()
-        
-        ## Now that we have the src and dest nodes, and game, we  extract the
-        ## user that played the game 
+        df = pd.read_csv(gamesPath+pgID+'_wpgame_games.dat', sep=',')
+        df.columns= ['src_pg','game','end_pg']
+        print df.shape
+
+        ## user that played the game
         userIdLst = []
         iterRow = df.iterrows()
         for i,row in iterRow:
-            #print row.game,':'
+            print row.game,':'
             userIdLst = np.array(usersPlayedNFinishedGame( row.game )) #potentially multiple
-	    #print len(userIdLst)
-            if len(userIdLst)>1: 
-	        for usrId in userIdLst: 
-		    #print row.game, usrId[0], usrId[1]
+            print len(userIdLst)
+            if len(userIdLst)>1:
+                for usrId in userIdLst:
+                    #print row.game, usrId[0], usrId[1]
                     dicts = {'game': row.game, 'usr': usrId[0], 'clicks': usrId[1]}
-                    #print dicts #dfHP.append({"game": 34, "usr": 23, "clicks": 44}, ignore_index=True) 
-                    dfHP = dfHP.append(dicts, ignore_index=True) 
-
+                    print "dicts:", dicts #dfHP.append({"game": 34, "usr": 23, "clicks": 44}, ignore_index=True)
+                    dfHP  = dfHP.append(dicts, ignore_index=True)
+            else:
+                print 'output len is 0'
+        
+        print len(dfHP)
         ## construct a unique output filename
-        outFname = re.split(r'.dat',inputGameFn.rstrip())
-        outFname = '/home/saguinag/CategoryPaths/humanpathsDatafiles/'+outFname[0]+'.dataframe' 
+        outFname = gamesPath + pgID +"_wpgame_games.dat"
+        print outFname #if (dfHP.shape
         dfHP.to_csv(outFname, sep=',',mode='w',encoding='utf-8',index=False)
 
     print 'Done.'
-"""    
 
-    hpfns  = getFilenames(args.humanpathsdir)
-    
-    if debug: print fns[:4
-    if debug: print hpfns[:4]
-    page_id_set = [] ## declare a list source page ids
-    for filename in fns:
-        result = re.search('sssp_(.*).txt', filename)
-        if result is not None:
-            page_id_set.append(result.group(1))
-            #hpfile_set.append([s for s in hpfns if result.group(1) in s])
-    srcPageIds     = np.array(page_id_set)
-    if debug: print '\n> Isolated the source page_ids'
-
-    for srcNode in srcPageIds:
-        #if not (srcNode == '9475228'):
-        ## for each source node
-        print srcNode 
-        ssspFile = [s for s in fns if srcNode in s][0]
-        #if debug: print '> sssp file to search:',ssspFile
-
-        pathFile = [s for s in hpfns if srcNode in s]
-        if not (not pathFile):
-            inputFile = args.humanpathsdir+'/'+pathFile[0]
-            #if debug: print 'inputFile: ',inputFile
-            df0 =pd.read_csv(inputFile, sep=',',index_col=0)
-            #if debug: print df0.head()
-            outFile = '/home/saguinag/knowledgeNetNav/dataFiles/'+srcNode+'_hp_guuid_uuid_sssp.csv' 
-            if not os.path.exists(outFile):
-                f = open(outFile,'wb')
-                iterRow = df0[['game_uuid','userid','clicks']].iterrows()
-                for i, row in iterRow:
-                    endPageId = ssspScoreToEndpageIn(row.game_uuid)
-                    if debug: print '> endPageId: ',endPageId[0][0],row.userid, row.game_uuid
-                    ssspScoreStr = find_sssp_score(endPageId[0][0],args.directory+'/'+ssspFile)
-                    if debug: print '>', ssspScoreStr 
-                    if (ssspScoreStr is not None) and (endPageId is not None):
-                        ssspScore = re.split(r'\t',ssspScoreStr.rstrip())    #find_sssp_score(endPageId[0][0],args.directory+'/'+ssspFile))
-                        hpClicks =  row.clicks #df0[df0['game_uuid'].str.contains(guuid)]['clicks'].iloc[0]
-                        hpUser   =  row.userid #df0[df0['game_uuid'].str.contains(guuid)]['userid'].iloc[0]
-                        #print  '%s, %s, %s, %s' % (hpClicks,row.game_uuid, hpUser,ssspScore[1])
-                        csv.writer(f).writerow([hpClicks,row.game_uuid, hpUser, ssspScore[1][0]])
-                    #if None -> next item
-                f.close()
-                print '>',outFile
-    print 'Done. Finished all source nodes'
-
-"""

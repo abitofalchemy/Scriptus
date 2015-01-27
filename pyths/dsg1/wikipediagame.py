@@ -221,6 +221,7 @@ def gamesWithSourceNode(srcPageId,limit = -1):
         conn = MySQLdb.Connection(server, 'saguinag', 'dsg1!0xB', 'wikipedia')
         cursor = conn.cursor()
         if limit<0:
+            print limit
             query = "SELECT W.page_id, uuid, W2.page_id \
                      FROM wikipediagame.game_game \
                      JOIN wikipedia.page W ON W.page_title=start_page \
@@ -238,7 +239,7 @@ def gamesWithSourceNode(srcPageId,limit = -1):
         conn.commit()
         #print cursor.rowcount
         results = cursor.fetchall()
-        #print results 
+        print len(results) 
         #for row in results:
         #    print row;
              
@@ -256,18 +257,20 @@ def buildConnectionString(params):
     Returns string."""
     return ";".join(["%s=%s" % (k, v) for k, v in params.items()])
 if __name__ == "__main__":
-    tstInt = 3
+#    tstInt = 3
+#
+#    if tstInt == 0:
+#        for row in gamesWithSourceNode('1018340',10):
+#            print row
+#    elif tstInt == 1:
+#        for row in humanPaths4GameStartingAt('1018340',10):
+#            print row
+#    elif tstInt == 2: # find games played and finished by user 
+#        for row in usersPlayedNFinishedGame('2f8aa3635a8749f1b01af5d0e0af8d42'):
+#            print row
+#    elif tstInt == 3: # game completed by 
+#        for row in usersPlayedNFinishedGame('2a913d67cde840bc84306e5461b977b0'):
+#            print row
+    for row in humanPaths4GameStartingAt('1018340',2):
+        print row
 
-    if tstInt == 0:
-        for row in gamesWithSourceNode('1018340',10):
-            print row
-    elif tstInt == 1:
-        for row in humanPaths4GameStartingAt('1018340',10):
-            print row
-    elif tstInt == 2: # find games played and finished by user 
-        for row in usersPlayedNFinishedGame('2f8aa3635a8749f1b01af5d0e0af8d42'):
-            print row
-    elif tstInt == 3: # game completed by 
-        for row in usersPlayedNFinishedGame('2f8aa3635a8749f1b01af5d0e0af8d42'):
-            print row
-            

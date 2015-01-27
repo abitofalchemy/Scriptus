@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/local/bin/python
 
 # -*- coding: utf-8 -*-
 # http://www.thisisthegreenroom.com/2011/installing-python-numpy-scipy-matplotlib-and-ipython-on-lion/
@@ -10,10 +10,10 @@
 
 import os
 import sys
-import MySQLdb 
-from wikipediagame import humanPaths4GameStartingAt
-from wikipediagame import ssspScoreToEndpageIn
-from wikipediagame import usersPlayedNFinishedGame
+##import MySQLdb
+#from wikipediagame import humanPaths4GameStartingAt
+#from wikipediagame import ssspScoreToEndpageIn
+#from wikipediagame import usersPlayedNFinishedGame
 import numpy as np
 import pandas as pd
 import glob
@@ -21,12 +21,11 @@ import re
 import argparse
 import datetime
 from itertools import groupby
-from sssp_src2dest_score import find_sssp_score
+#from sssp_src2dest_score import find_sssp_score
 import csv
 
 #--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|
-def getFilenames(inDirPath):    
-    
+def getFilenames(inDirPath):
     filenames = filter( lambda f: not f.startswith('.'),[f for f in os.listdir(inDirPath) if os.path.isfile(os.path.join(inDirPath, f))])
     return filenames
 
@@ -117,49 +116,71 @@ def endpage_pageid_gameuuid_4sssp(wp_page_id):
             conn.close()
         return results
 
+
+def gather_cat_paths(arg_path):
+    filenames  = getFilenames(arg_path)
+    #
+    mother_df = pd.DataFrame()
+    tmp = pd.DataFrame()
+    i = 0
+    for file in filenames:
+        df = pd.read_csv(file);
+        mother_df = pd.concat([mother_df, df], axis=0)
+    print "size of mother_df",np.size(mother_df)
+
+    return mother_df
+
+# pandas DataFrame.read_csv(file_path, index_col=0 or when no index, its default is to none)
+# pandas DataFrame concat at the bottom of a df
 ################################################################
 ##  main
 ###############################################################
 if __name__ == "__main__":
-    """ our_algoScores.py 
-        
-        input: sssp folder 
-        
-        Outputs: 
-    """
-    debug = False 
-    parser = argparse.ArgumentParser(description='py pub crawler...')
-    parser.add_argument('filePath',help='ssspGamesDatFiles',action='store')
+#    """ our_algoScores.py 
+#        
+#        input: sssp folder 
+#        
+#        Outputs: 
+#    """
+#    debug = False 
+    parser = argparse.ArgumentParser(description='II_Cat_vs_Sss_Paths.py output both scores')
+    parser.add_argument('filePath',help='Given local path',action='store')
 
     args = parser.parse_args()
-    inputGameFn = args.filePath
-     
-    print inputGameFn
-    result = re.search('/home/saguinag/CategoryPaths/ssspGamesDatFiles/(.*)_games_sp.dat', inputGameFn)
-    outFname = re.split(r'.dat',inputGameFn.rstrip())
-    outFname = '/home/saguinag/CategoryPaths/ourAlgoScores/'+result.group(1)+'_our_sp.txt'
-    if not os.path.exists(outFname):
-        dfHP = pd.DataFrame() #columns=['game', 'usr', 'clicks'])
-        df = pd.read_csv(inputGameFn, sep=',') 
-        df.columns= ['src_pg','game','end_pg','sp']
-        print df.shape
-        ## search file
-        fileToSearch = '/data/zliu8/our_algo_sort/Yay_'+result.group(1)+'_sort.txt'
-        ## Now that we have the src and dest nodes, and game, we  extract the
-        ## user that played the game 
-        src_ouralgo_dic = {}
-        iterRow = df.iterrows()
-        for i,row in iterRow:
-            elem_found = grep(row.end_pg, file(fileToSearch))
-            if (np.size(elem_found) == 1): 
-                for elem in elem_found: 
-                   scoreArr = elem.split('\t')
-                   src_ouralgo_dic[row.end_pg] = scoreArr[3]
-            else: 
-                src_ouralgo_dic[row.end_pg] = np.nan
-                #print i 
-        df['our_score'] = df.end_pg.map(src_ouralgo_dic)
-        print df.head()
-        ## construct a unique output filename
-        df.to_csv(outFname, sep=',',mode='w',encoding='utf-8',index=False)
-    print 'Done.'
+#    inputGameFn = args.filePath
+#     
+#    print inputGameFn
+#    result = re.search('/home/saguinag/CategoryPaths/ssspGamesDatFiles/(.*)_games_sp.dat', inputGameFn)
+#    outFname = re.split(r'.dat',inputGameFn.rstrip())
+#    outFname = '/home/saguinag/CategoryPaths/ourAlgoScores/'+result.group(1)+'_our_sp.txt'
+#    if not os.path.exists(outFname):
+#        dfHP = pd.DataFrame() #columns=['game', 'usr', 'clicks'])
+#        df = pd.read_csv(inputGameFn, sep=',') 
+#        df.columns= ['src_pg','game','end_pg','sp']
+#        print df.shape
+#        ## search file
+#        fileToSearch = '/data/zliu8/our_algo_sort/Yay_'+result.group(1)+'_sort.txt'
+#        ## Now that we have the src and dest nodes, and game, we  extract the
+#        ## user that played the game 
+#        src_ouralgo_dic = {}
+#        iterRow = df.iterrows()
+#        for i,row in iterRow:
+#            elem_found = grep(row.end_pg, file(fileToSearch))
+#            if (np.size(elem_found) == 1): 
+#                for elem in elem_found: 
+#                   scoreArr = elem.split('\t')
+#                   src_ouralgo_dic[row.end_pg] = scoreArr[3]
+#            else: 
+#                src_ouralgo_dic[row.end_pg] = np.nan
+#                #print i 
+#        df['our_score'] = df.end_pg.map(src_ouralgo_dic)
+#        print df.head()
+#        ## construct a unique output filename
+#        df.to_csv(outFname, sep=',',mode='w',encoding='utf-8',index=False)
+#    print 'Done.'
+    # cat paths vs sssp
+    # I. Cat Paths
+    cat_path_dir = args.filePath
+    unique_paths = gather_cat_paths(cat_path_dir) # for files in given dir path
+    print unique_paths.shape
+    print "Done."
