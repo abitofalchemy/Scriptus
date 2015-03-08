@@ -185,21 +185,23 @@ def id_wikipedia_games():
 
 	return
 
-def fetch_games_with_start_nodes():
-	start_path = "/home/saguinag/CategoryPaths/gamesDatafiles/"
-	file_lst = getFilenames(start_path) 
-	line_data = []
-	path_dict = dict()
-	for file in file_lst:
-		with open(start_path+file, 'r') as in_file:
-			in_file.readline()
-			for line in in_file:
-				line_parts = line.rstrip().split(",")
-				path_dict[line_parts[0]+'_to_'+line_parts[2]] = line_parts[1]
-				print path_dict
-				break
-		break
-
+def fetch_games_with_start_nodes(src_filename):
+    if src_filename is None:
+    	start_path = "/home/saguinag/CategoryPaths/gamesDatafiles/"
+	    file_lst = getFilenames(start_path) 
+	    line_data = []
+	    path_dict = dict()
+	    for file in file_lst:
+            ## for each file map the path to corresponding game
+	        with open(start_path+file, 'r') as in_file:
+			    in_file.readline()
+			    for line in in_file:
+				    line_parts = line.rstrip().split(",")
+				    path_dict[line_parts[0]+'_to_'+line_parts[2]] = line_parts[1]
+				    print path_dict
+				    break
+		    break
+    
 	return
 
 
@@ -225,5 +227,5 @@ if __name__ == "__main__":
         fig.savefig('../public_html/boxplot.png', bbox_inches='tight')
         print df.describe()
     elif do == 1: 
-        fetch_games_with_start_nodes()
+        fetch_games_with_start_nodes("/data/zliu8/sssp/sssp_1645370.txt")
         
