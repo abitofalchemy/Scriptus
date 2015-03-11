@@ -11,7 +11,7 @@ from itertools import islice
 
 def imdb_parse_movies():
 	
-	list_input = "imdb_data/movies.list"
+	list_input = "/data/saguinag/Datasets/imdb/movies.list"
 
 	with open(list_input) as f:
 		movies_dict = dict()
@@ -31,7 +31,7 @@ def imdb_parse_movies():
 	return movies_dict
 
 def imdb_parse_actors_list():
-	in_file = "imdb_data/actors.list"
+	in_file = "/data/saguinag/Datasets/imdb/actors.list"
 	print 'imdb_parse_actors_list'	
 	with open(in_file) as f:
 		local_data = []# key = movie, value = array of actors
@@ -61,7 +61,7 @@ def imdb_parse_actors_list():
 
 def imdb_parse_actresses_list():
 	print "imdb_parse_actresses_list"
-	in_file = "imdb_data/actresses.list"
+	in_file = "/data/saguinag/Datasets/imdb/actresses.list"
 	#
 	with open(in_file) as f:
 		local_data = []# key = movie, value = array of actors
