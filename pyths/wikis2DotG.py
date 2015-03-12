@@ -1,5 +1,9 @@
 #!/usr/bin/python
 # Copyright (c) Sal Aguinaga 2015
+#
+#	Brief description:
+#	This script parses wiki genesis tsv files and converts them to
+# network graph files .g 
 
 import sys, os
 import argparse, re
@@ -7,7 +11,6 @@ import pandas as pd
 import numpy as np
 from pprint import pprint
 from collections import OrderedDict
-#from itertools import islice
 
 
 # def create_dotG_for_wikifile(infilepath):
@@ -209,38 +212,39 @@ if	__name__ =='__main__':
 	uniques = pd.DataFrame.from_dict( uniques_at0.items())
 	uniques.columns = ['node','vId']
 	uniques['vId'] = list(range(1,len(uniques.index)+1))
-	print uniques
+	## print 'uniques: \t',uniques
+
+	#print uniques.loc[uniques.node == ("'s-Heerenberg", 0)]
 
 
 	# # Vertices
 	v_dat = []
 	for index, row in uniques.iterrows():
-		print 'v', row[1],row[0][1]
+		## print 'v', row[1],row[0][1]
 	# for k in uniques:
 	# 	print 'v',k[0],k[1]
 	# # 	v_dat.append(['v', uniques[k][0],k[1] ])
 		v_dat.append(['v', row[1],row[0][1] ])
 
 	# # # # Edges
-	# e_dat = []
-	# for index, row in df.iterrows():
-	# 	# print row
-	# 	# print row[0],row[1]
-	# 	#print 'e', uniques[(row[0],row[1])][0], uniques[(row[2],row[3])][0],"'links2'"
+	e_dat = []
+	for index, row in df.iterrows():
+		vNode  = uniques.loc[uniques['node'] == (row[0],row[1])].vId
+		uNode  = uniques.loc[uniques.node == (row[2],row[3])].vId
+		## print 'e', vNode.iloc[0], uNode.iloc[0], "'linksTo'"
+  #		print 'e', uniques[(row[0],row[1])][0], uniques[(row[2],row[3])][0],"'links2'"
 	# 	e_dat.append([uniques[(row[0],row[1])][0], uniques[(row[2],row[3])][0],"'links2'"])
-	# 	#break
-	# nodes = pd.DataFrame(v_dat)
-	# edges = pd.DataFrame(e_dat)
+		e_dat.append(['e', vNode.iloc[0], uNode.iloc[0], "'linksTo'"] )
+	nodes = pd.DataFrame(v_dat)
+	edges = pd.DataFrame(e_dat)
 	
-	# try:
-	# 	nodes.to_csv('/tmp/file.g',mode='w',sep=' ', index=False, encoding='utf-8', header=False) 
-	# except Exception, e:
-	# 	raise e
+	try:
+		nodes.to_csv('/tmp/file.g',mode='w',sep=' ', index=False, encoding='utf-8', header=False) 
+	except Exception, e:
+		raise e
 	
-	# try:
-	# 	edges.to_csv('/tmp/file.g',mode='a',sep=' ', index=False, encoding='utf-8', header=False)
-	# except Exception, e:
-	# 	raise e
+	try:
+		edges.to_csv('/tmp/file.g',mode='a',sep=' ', index=False, encoding='utf-8', header=False)
+	except Exception, e:
+		raise e
 	
-	
-	# 	
