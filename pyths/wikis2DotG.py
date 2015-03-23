@@ -190,12 +190,13 @@ if	__name__ =='__main__':
 	parser.add_argument('wiki_ts_infile', help='input file path', action='store')
 	
 	args = parser.parse_args()
+	outBase = os.path.basename(args.wiki_ts_infile).split('.')[0]
 	print '\n','-'*80
 
 	# create_dotG_for_wikifile(args.wiki_ts_infile)
 	# print 'Done.'
 
-	df = pd.read_csv( args.wiki_ts_infile, sep='\t', nrows=10)
+	df = pd.read_csv( args.wiki_ts_infile, sep='\t', nrows=50)
 	df.columns = ['u','uns', 'v', 'vns']
 
 	#vertices = (df.groupby(['u','type']).groups)
@@ -208,7 +209,7 @@ if	__name__ =='__main__':
 	#vertices['vId'] = list(range(1,len(vertices.index)+1)) ## modified the range to start at 1
 	#pprint (vertices)
 	uniques_at0 = (vertices.groupby(['u','ns']).groups) ## get uniques
-	pprint (uniques_at0)
+	#pprint (uniques_at0)
 	uniques = pd.DataFrame.from_dict( uniques_at0.items())
 	uniques.columns = ['node','vId']
 	uniques['vId'] = list(range(1,len(uniques.index)+1))
@@ -237,14 +238,15 @@ if	__name__ =='__main__':
 		e_dat.append(['e', vNode.iloc[0], uNode.iloc[0], "'linksTo'"] )
 	nodes = pd.DataFrame(v_dat)
 	edges = pd.DataFrame(e_dat)
-	
+
+	out_file = '/data/saguinag/MetaGraphs/wiki_genesis_data/'+outBase+'.g'
 	try:
-		nodes.to_csv('/tmp/file.g',mode='w',sep=' ', index=False, encoding='utf-8', header=False) 
+		nodes.to_csv(out_file, mode='w',sep=' ', index=False, encoding='utf-8', header=False) 
 	except Exception, e:
 		raise e
 	
 	try:
-		edges.to_csv('/tmp/file.g',mode='a',sep=' ', index=False, encoding='utf-8', header=False)
+		edges.to_csv(out_file, mode='a',sep=' ', index=False, encoding='utf-8', header=False)
 	except Exception, e:
 		raise e
 	
