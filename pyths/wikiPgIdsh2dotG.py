@@ -17,6 +17,8 @@ def MapWikiPageTitle2PageId( fileNamePath ):
 	
 	dataDf['src'] = dataDf['src'].str.replace(' ','_')
 	dataDf['trg'] = dataDf['trg'].str.replace(' ','_')
+	
+	print 'Input file shape:', dataDf.shape
 
 	grp1 = dataDf.groupby(['src', 'ns0'])
 	grp2 = dataDf.groupby(['trg', 'ns1'])
@@ -27,9 +29,16 @@ def MapWikiPageTitle2PageId( fileNamePath ):
 
 	df1 = pd.DataFrame()
 	df1 = pd.concat([df, df0])
-	df1['ns'].convert_objects(convert_numeric=True)
+	df1['ns'].convert_objects(convert_numeric=True) ## this may have duplicates
+	df1.reset_index(inplace=True)
 
-	#print df1[df1['title'] == 'Gerard_Cornielje']
+	## test
+	#tmpDict = dict()
+	#for index,row in df1.iterrows():
+	#	tmpDict[(row[0],row[1])] = index
+
+
+	print 'Unique Src and Destination nodes list size:',df1.shape
 	print 'Got key/values'
 
 	outFile = "wiki_genesis_data/"+os.path.basename(fileNamePath).split('.')[0]
@@ -56,14 +65,14 @@ def MapWikiPageTitle2PageId( fileNamePath ):
 			if len(results)<1: # no found in wikipedia
 				#print i,"huston we have a problem, titled removed from our WP"
 				graph_dict[(k['title'],k['ns'])] = -1 # dict (title, ns) = page_id
-				graph_str_dict["%s, %d" % (k['title'],k['ns'])] = -1 # dict (title, ns) = page_id
+				graph_str_dict["%s, %d" % (k['title'],k['ns'])] = (-1,i+1) # dict (title, ns) = (page_id, nodeId)
 				dotGvertices.append(["v", i+1, '%d, %d' %(-1, k['ns'])]) # v
-			else if len(results) == 1: 
+			elif len(results) == 1: 
 				for row in results:
 					#print "v %d\t'%ld, %d'" %(i+1,row[0],k['ns']) # v
 					dotGvertices.append(["v", i+1, '%d, %d' %(row[0], k['ns'])]) # v
 					graph_dict[(k['title'],k['ns'])] = row[0] # dict (title, ns) = page_id
-					graph_str_dict["%s, %d" % (k['title'],k['ns'])] = row[0] # dict (title, ns) = page_id
+					graph_str_dict["%s, %d" % (k['title'],k['ns'])] = (row[0], i+1) # dict (title, ns) = (page_id, nodeId)
 			else:
 				print "Huston, we have a problem, results is of size: ",len(results)
 			#break
@@ -83,7 +92,9 @@ def MapWikiPageTitle2PageId( fileNamePath ):
 
 	vertices = pd.DataFrame(dotGvertices)
 	vertices.columns = ['element','vId', 'label']
-	
+	print 'vertices, graph_dict, graph_str_dict'
+	print vertices.shape, len(graph_dict), len(graph_str_dict)
+
 	## # # Edges																																																																
 	e_dat = []										
 	for index, row in dataDf.iterrows():																																																						 
@@ -97,6 +108,7 @@ def MapWikiPageTitle2PageId( fileNamePath ):
 
 	#nodes = pd.DataFrame(v_dat)																																																									
 	edges = pd.DataFrame(e_dat) 
+	print 'edges shape:', edges.shape
 
 	## Write .g file to disk
 	outFile += ".g"
@@ -116,14 +128,15 @@ def MapWikiPageTitle2PageId( fileNamePath ):
 
 
 if	__name__ =='__main__':
-	"""parser = argparse.ArgumentParser(description='Create a look up table between page_title and page_id')
+	parser = argparse.ArgumentParser(description='Create a look up table between page_title and page_id')
 	parser.add_argument('infile', help='Input file: wikigenesis*.tsv', action='store')
 	
 	args = parser.parse_args()
-	"""
+	
 	print "\n","-"*80
 
-	out_data = MapWikiPageTitle2PageId( "/data/tweninge/wikigenesis_1262304000000.tsv")
+	out_data = MapWikiPageTitle2PageId( args.infile )
+	#out_data = MapWikiPageTitle2PageId( "/data/tweninge/wikigenesis_1262304000000.tsv")
 	"""with open("wiki_genesis_data/out.csv", "wb") as f:
 		writer = csv.writer(f, delimiter=' ', quoting=csv.QUOTE_MINIMAL )
 		writer.writerows(out_data)
