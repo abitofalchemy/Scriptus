@@ -1,6 +1,7 @@
 #!/usr/bin/python 
 # -*- coding: utf-8 -*-
 # Copyright (c) Sal Aguinaga 2015
+# lg format 
 
 import sys, os
 import pandas as pd
@@ -56,13 +57,9 @@ def MapWikiPageTitle2PageId( fileNamePath ):
 		cursor = conn.cursor()
 		for i,k in df1.iterrows():
 			if k['ns'] == 14:
-				string = k['title']
-				query = 'select cat_id, cat_title FROM category where cat_title = "%s";' % (string[0].upper()+string[1:])
-				#query = 'select cat_id, cat_title FROM category where upper(cat_title) = "%s";' % (k['title'].upper())
+				query = 'select cat_id, cat_title FROM category where cat_title = "%s";' % (k['title'])
 			else:
-				#query = 'select page_id, page_title, page_namespace	from page where upper(page_title) = "%s" and page_namespace = "%d";' % (k['title'].upper(), k['ns'])
-				string = k['title']
-				query = 'select page_id, page_title, page_namespace	from page where page_title = "%s" and page_namespace = "%d";' % (string[0].upper()+string[1:], k['ns'])
+				query = 'select page_id, page_title, page_namespace	from page where page_title = "%s" and page_namespace = "%d";' % (k['title'], k['ns'])
 			cursor.execute(query)
 			conn.commit()
 			results = cursor.fetchall()
@@ -79,6 +76,7 @@ def MapWikiPageTitle2PageId( fileNamePath ):
 					graph_str_dict["%s, %d" % (k['title'],k['ns'])] = (row[0], i+1) # dict (title, ns) = (page_id, nodeId)
 			else:
 				print "Huston, we have a problem, results is of size: ",len(results)
+			#break
 	except MySQLdb.Error, e:
 		print "Error %d: %s" % (e.args[0], e.args[1])
 		sys.exit(1)
