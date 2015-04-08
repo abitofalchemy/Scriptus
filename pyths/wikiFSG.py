@@ -1,6 +1,8 @@
 #!/usr/bin/python 
 # -*- coding: utf-8 -*-
 # Copyright (c) Sal Aguinaga 2015
+# wikiFSG
+#		
 # References:
 # 	http://iswsa.acm.org/mphf/mphf.py
 # 	http://stackoverflow.com/questions/25757042/create-hash-value-for-each-row-of-data-with-selected-columns-in-dataframe-in-pyt
