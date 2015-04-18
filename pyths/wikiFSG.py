@@ -42,7 +42,7 @@ if	__name__ =='__main__':
 
 	## -minsize 3 -nsubs 100
 	loghome = '/home/saguinag/logs/'
-	glogs = ['wikigenesis_1262304000000_30Mar15_0002.log']
+	glogs = ['wikigenesis_1388534400000_08Apr15_0658.log']
 	for infile in glogs:
 		tic = time.clock()
 		outdata = parseSubdueLog( loghome+infile )
@@ -51,6 +51,7 @@ if	__name__ =='__main__':
 			thefile.write(''.join(outdata))                                                            
 		print 'Done'
 		toc = time.clock()
+		print outFile
 		print toc-tic
 	#break
 	
