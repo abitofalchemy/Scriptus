@@ -1,3 +1,4 @@
+
 #!/bin/bash
 
 ## working with parallel
@@ -31,5 +32,18 @@ head -n1 ~/Research/CategoryPaths/wiki_data/wpg_paths/wikipedia_games_set.tsv | 
 ## sort a file by column 2
 ls -1 /tmp/pg_rnk_bspl.* | parallel sort -n -r -k2 -o {}_sorted {}
 
+##  sort -n --parallel=4 -k1 -o bs_pg_lnks.tsv bs_pg_lnks.tsv
+ #  sort the pagelinks on column 1
+ #  We the find the intersect between files
+ #  join <(sort bs_pg_lnks.tsv) <(sort page_links_topranked.tsv) | tr ' ' '\t' >top_ranked_bs_pagelinks.tsv
 
+## Getting the intersect of page links topranked with categorylinks.txt file
+ # saguinag@dsg1:/data/saguinag/datasets/enwiki$ join <(sort categorylinks.txt) <(sort page_links_topranked.tsv) | tr ' ' '\t' >top_ranked_cate_links.tsv
 
+## Working with parallel and catpath, a version that operates on the categories
+## graph
+head /Users/saguinag/Research/CategoryPaths/wiki_data/wpg_paths/adjlist/8083_act_neis.tsv | parallel --colsep '\t' ./catpath {1} {2} '>' /tmp/output_file
+
+## references
+# https://wiki.scinet.utoronto.ca/wiki/images/7/7b/Tech-talk-gnu-parallel.pdf
+# http://www.nas.nasa.gov/hecc/support/kb/using-gnu-parallel-to-package-multiple-jobs-in-a-single-pbs-job_303.html
