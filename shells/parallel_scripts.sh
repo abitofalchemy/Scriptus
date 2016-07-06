@@ -1,5 +1,8 @@
-
 #!/bin/bash
+
+## running a script 100 times in parallel :q
+
+parallel -j 4 python hrgExamineRules.py ../demo_graphs/karate_club.edgelst.gpickle -- `for i in {1..100}; do echo $i; done;`
 
 ## working with parallel
 
@@ -40,10 +43,4 @@ ls -1 /tmp/pg_rnk_bspl.* | parallel sort -n -r -k2 -o {}_sorted {}
 ## Getting the intersect of page links topranked with categorylinks.txt file
  # saguinag@dsg1:/data/saguinag/datasets/enwiki$ join <(sort categorylinks.txt) <(sort page_links_topranked.tsv) | tr ' ' '\t' >top_ranked_cate_links.tsv
 
-## Working with parallel and catpath, a version that operates on the categories
-## graph
-head /Users/saguinag/Research/CategoryPaths/wiki_data/wpg_paths/adjlist/8083_act_neis.tsv | parallel --colsep '\t' ./catpath {1} {2} '>' /tmp/output_file
-
-## references
-# https://wiki.scinet.utoronto.ca/wiki/images/7/7b/Tech-talk-gnu-parallel.pdf
-# http://www.nas.nasa.gov/hecc/support/kb/using-gnu-parallel-to-package-multiple-jobs-in-a-single-pbs-job_303.html
+## 

@@ -4,4 +4,5 @@
 
 	find . -name .svn -exec rm -rf {} \;
 
++ Link to grids in matplotlib http://stackoverflow.com/questions/20057260/how-to-remove-gaps-between-subplots-in-matplotlib
 
