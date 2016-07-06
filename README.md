@@ -1,10 +1,17 @@
 Scriptus
 ========
 
-+ The gist:
-  Scripts: Python, PHP, Octave, Matlab, JS, and others
+Scriptus is a collection of scripts that I've collected over the years to 
+carry out useful tasks. 
 
-+ Test
+Scripts include Python, PHP, Octave, Matlab, JS, and others. Feel free to use these
+and when something isn't clear, feel free to contact me and ask for more info and
+details.
+
+
+## StarLog
+
+06Jul16: Added Cpps and R's
 
 ## On R (cheat sheets)
 -[From the DataCamp course - data.table] (https://s3.amazonaws.com/assets.datacamp.com/img/blog/data+table+cheat+sheet.pdf)
