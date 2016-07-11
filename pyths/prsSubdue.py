@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/Users/saguinag/ToolSet/anaconda/bin/python
 # -*- coding: utf-8 -*-
 # Copyright (c) Sal Aguinaga 2015
 import sys, os
@@ -14,7 +14,11 @@ import re
 # 			]
 
 ## working directory
+<<<<<<< HEAD
+os.chdir("/Users/saguinag/Public/WikiGenesis/logs/")
+=======
 os.chdir("/home/saguinag/logs/")
+>>>>>>> a3a4676f685e5b861df693e02d12636c39d49094
 
 logFiles = [
 "wikigenesis_1262304000000_08Apr15_0625.log",
@@ -25,7 +29,7 @@ logFiles = [
 
 df = pd.DataFrame()
 for inputfile in logFiles:
-
+	print inputfile
 	pattern = re.compile(r'_(\d*?)_')
 	tmStamp = pattern.search(inputfile)
 	graphTSID  = tmStamp.group(1)
@@ -36,14 +40,38 @@ for inputfile in logFiles:
 		line = f.readline()
 		inx = 1
 		Best = 0
+<<<<<<< HEAD
+		k = 0
 		regexp = re.compile(r'Best (\d*) substructures')
 		while line:
+
+=======
+		regexp = re.compile(r'Best (\d*) substructures')
+		while line:
+>>>>>>> a3a4676f685e5b861df693e02d12636c39d49094
 			if regexp.search(line):
 				Best = 1
 				data.append(line.rstrip('\n\r'))
 				#print line
 				lparts = regexp.search(line)
 				bestSubs = lparts.group(1)	
+<<<<<<< HEAD
+				line = f.readline()
+			rgxp = re.compile(r'\d*. Substructure:')
+			if rgxp.search(line) and Best: 
+				last = k
+				k +=1
+				data.append(line.rstrip('\n\r'))
+				line = f.readline()
+			while 'Instance ' in line and Best:
+				data.append(line.rstrip('\n\r'))
+				line = f.readline()
+				while ('v ' in line) or ('d ' in line):
+					data.append(line.rstrip('\n\r'))
+					line = f.readline()
+			line = f.readline()		
+		############
+=======
 				break
 		line = f.readline()
 		while k < bestSubs:
@@ -54,11 +82,17 @@ for inputfile in logFiles:
 			line = f.readline()
 		############
 		pprint.pprint(data)  
+>>>>>>> a3a4676f685e5b861df693e02d12636c39d49094
 	ser = pd.Series(data)
 	df[str(graphTSID)] = ser
 	break
 ## 
+<<<<<<< HEAD
+print df.head(10)
+df.to_csv("./tsgraphs.tsv", sep='\t', mode='w', encoding='utf-8', index=False)
+=======
 #print df.tail()
 print df.head(10)
 df.to_csv("/data/saguinag/MetaGraphs/wiki_genesis_data/tsgraphs.tsv", sep='\t', mode='w', encoding='utf-8', index=False)
+>>>>>>> a3a4676f685e5b861df693e02d12636c39d49094
 print 'Done'

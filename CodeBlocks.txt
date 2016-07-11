@@ -6,6 +6,7 @@
 
 + keep a job running  http://askubuntu.com/questions/8653/how-to-keep-processes-running-after-ending-ssh-session
   You could do that by using screen. Type man screen to find out more or read this introduction/tutorial to screen.
++ Link to grids in matplotlib http://stackoverflow.com/questions/20057260/how-to-remove-gaps-between-subplots-in-matplotlib
 
 Simple scenario:
 
