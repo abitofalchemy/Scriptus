@@ -12,7 +12,7 @@ import MySQLdb
 def wpgame(query):
     server='localhost'
     conn = None
-        
+            
     try:
         conn = MySQLdb.Connection(server, 'saguinag', 'dsg1!0xB', 'wikipediagame')
         cursor = conn.cursor()
@@ -35,23 +35,26 @@ def wpgame(query):
 def clickedPagesForGameAndUser(game_uuid, userid):
     """ input:  wikipediagame: uuid, userid
                 output: number of cliked pages for a given game and userid
-                """
-    server='localhost'
-    conn = None
+    """
+    server = 'localhost'
+    conn   = None
+    results = []
 
     try:
         conn = MySQLdb.Connection(server, 'saguinag', 'dsg1!0xB', 'wikipediagame')
         cursor = conn.cursor()
 
         #query ="SELECT /*uuid,end_page,*/ w.page_id from wikipediagame.game_game \
-        query ="select count(clicked_page) \
-                from game_click \
-                WHERE game_uuid='%s' AND userid='%s';" % game_uuid
+        query ="select clicked_page, wp.page_id \
+                FROM game_click JOIN wikipedia.page as wp \
+                ON clicked_page =wp.page_title \
+                WHERE game_uuid='%s' AND userid='%s' and wp.page_namespace=0;" % (game_uuid, userid)
 
         cursor.execute(query)
         conn.commit()
 
         results = cursor.fetchall()
+        #results.append(cursor.fetchall())
 
     except MySQLdb.Error, e:
         print "Error %d: %s" % (e.args[0], e.args[1])
@@ -59,7 +62,7 @@ def clickedPagesForGameAndUser(game_uuid, userid):
     finally:
         if conn:
             conn.close()
-        return results
+    return results
     """ Done """
  
 def usersPlayedNFinishedGame( game_uuid ):
@@ -256,7 +259,9 @@ def buildConnectionString(params):
     """Build a connection string from a dictionary of parameters.
     Returns string."""
     return ";".join(["%s=%s" % (k, v) for k, v in params.items()])
+
 if __name__ == "__main__":
+  """
 #    tstInt = 3
 #
 #    if tstInt == 0:
@@ -286,4 +291,5 @@ if __name__ == "__main__":
     elif tstInt == 3: # game completed by 
         for row in usersPlayedNFinishedGame('2a913d67cde840bc84306e5461b977b0'):
             print row
-            
+  """            
+  print clickedPagesForGameAndUser ('fa3aeb53ef204a8eb6c6f2212d5ec273', 'Guest908CB031CF5C420A97324A884')

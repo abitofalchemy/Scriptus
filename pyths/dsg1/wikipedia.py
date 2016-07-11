@@ -9,6 +9,12 @@
 import sys
 import MySQLdb 
 
+"""
+wpgame(query):
+clickedPagesForGameAndUser(game_uuid, userid):
+
+
+"""
 def wpgame(query):
     server='localhost'
     conn = None
@@ -271,7 +277,8 @@ if __name__ == "__main__":
 #    elif tstInt == 3: # game completed by 
 #        for row in usersPlayedNFinishedGame('2a913d67cde840bc84306e5461b977b0'):
 #            print row
-    for row in humanPaths4GameStartingAt('1018340',2):
+"""
+for row in humanPaths4GameStartingAt('1018340',2):
         print row
 
     if tstInt == 0:
@@ -286,4 +293,5 @@ if __name__ == "__main__":
     elif tstInt == 3: # game completed by 
         for row in usersPlayedNFinishedGame('2a913d67cde840bc84306e5461b977b0'):
             print row
-            
+"""
+

@@ -4,4 +4,13 @@
 
 	find . -name .svn -exec rm -rf {} \;
 
++ keep a job running  http://askubuntu.com/questions/8653/how-to-keep-processes-running-after-ending-ssh-session
+  You could do that by using screen. Type man screen to find out more or read this introduction/tutorial to screen.
 
+Simple scenario:
+
+ssh into your remote box. Type screen Then start the process you want.
+
+Press Ctrl-A then Ctrl-D. This will "detach" your screen session but leave your processes running. You can now log out of the remote box.
+
+If you want to come back later, log on again and type screen -r This will "resume" your screen session, and you can see the output of your process.

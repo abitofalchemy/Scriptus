@@ -7,7 +7,7 @@
 
 import sys, os
 import pandas as pd
-import pprint 
+import pprint
 import re
 import glob
 from igraph import *
@@ -17,10 +17,66 @@ import argparse
 class SubdueLogFiles:
 	def __init__(self, log_file):
 		self.log_file = log_file
+		self.best_fsg_cnt = 0
 		self.fsg_inst = []
 		self.fsg_models = []
 		self.subgraph_nodes_dict = dict()
 	
+	def getNodesInFreqSubGraph(self, vSize):
+	##  given a subgstructure of size vSize (number of vertices), return actual
+		FSG_MODEL = False
+		with open (self.log_file, 'r') as f:
+			line = f.readline()
+			subs_cnt = 0
+			inst_cnt = 0
+			best_sbs = 0
+			
+			regexp	 = re.compile(r'Best (\d*) substructures')
+			while line:	
+				lparts = regexp.search(line)
+				if lparts is not None: 
+					best_sbs = int(lparts.group(1))
+					print "best substructures:", best_sbs
+					i = 0
+					while i < best_sbs:
+						rgxp = re.compile(r'(\d*). Substructure:')
+						lparts = rgxp.search(line)
+						if lparts is not None:
+							i = i + 1
+							subs_nbr = int(lparts.group(1))
+							line = f.readline()
+							regexp	 = re.compile(r'pos instances = (\d*),')
+							lparts = regexp.search(line)
+							if lparts is not None:
+								inst_cnt = int(lparts.group(1))
+								line = f.readline()
+								line = f.readline()
+						if 'Graph(%d'%vSize in line:
+							#print  subs_nbr, line.rstrip(':\r\n'), inst_cnt
+							model = line.rstrip(':\r\n') 
+							j = 0
+							while j < inst_cnt:
+								if 'Instance' in line:
+									rgxp = re.compile(r'Instance (\d*?):')
+									lparts = rgxp.search(line)
+									inst_nbr = lparts.group(1)
+									#print subs_nbr, model, inst_cnt, inst_nbr
+									j = j + 1
+								
+									line = f.readline()
+									nodes = []
+									while  'v ' in line:
+										rgxp = re.compile(r'v (\d*?) .')
+										lparts = rgxp.search(line)
+										nodes.append(int (lparts.group(1)))
+										line = f.readline()
+									print  model, subs_nbr, inst_nbr, nodes
+								line = f.readline()
+						line = f.readline()
+				line = f.readline()
+
+			print 'Done'
+
 	def getSubgraphNodesInInstance(self):
 		with open (self.log_file, 'r') as f:
 			line = f.readline()
@@ -32,7 +88,7 @@ class SubdueLogFiles:
 					Best = 1
 					line = f.readline()
 				if Best and ') Substructure' in line:
-					print line.rstrip('\r\n')
+					###printline.rstrip('\r\n')
 					rgxp = re.compile(r'(\d*). Substructure:')
 					lparts = rgxp.search(line)
 					subd_subs = lparts.group(1)
@@ -42,7 +98,7 @@ class SubdueLogFiles:
 					rgxp = re.compile(r'Instance (\d*?):')
 					lparts = rgxp.search(line)
 					instnc = lparts.group(1)
-					#print line.rstrip('\r\n')
+					####printline.rstrip('\r\n')
 					line = f.readline()
 					nodes = []
 					while  'v ' in line:
@@ -53,7 +109,7 @@ class SubdueLogFiles:
 					self.subgraph_nodes_dict["%s_%s"%(subd_subs,instnc)] = nodes
 
 				line = f.readline()
-			#pprint.pprint (subgraph_nodes_dict)
+			#pprint.p###print(subgraph_nodes_dict)
 
 	def getInstancesCount(self):
 		with open (self.log_file, 'r') as f:
@@ -70,12 +126,12 @@ class SubdueLogFiles:
 						#data.append(line.rstrip('\r\n'))
 						lparts = rgxp.search(line)
 						substr_nbr = lparts.group(1)
-						#print substr_nbr
+						####printsubstr_nbr
 						line = f.readline()
 						inst_re = re.compile(r'pos instances = (\d*?), pos examples')
 						if inst_re.search(line):
 							lparts = inst_re.search(line)
-							#print "{", substr_nbr ,":", lparts.group(1), "}"
+							####print"{", substr_nbr ,":", lparts.group(1), "}"
 							## Best substrugure and instance count
 							self.fsg_inst.append([substr_nbr, lparts.group(1)])	# 
 					line = f.readline()
@@ -111,20 +167,22 @@ class SubdueLogFiles:
 		
 	def getBestSubstructures(self):
 		with open (self.log_file, 'r') as f:
+			lparts = ''
 			line = f.readline()
 			regexp = re.compile(r'Best (\d*) substructures')
 			while line:
 				if regexp.search(line):
 					lparts = regexp.search(line)
-					print lparts.group(1)
+					####printlparts.group(1)
 					break
 				line = f.readline()
-		print "Done"
-
+		###print"Done"
+		self.best_fsg_cnt = int(lparts.group(1))
+		return self.best_fsg_cnt
 
 
 def get_network_timestamp_string(net_graph_filename):
-	##print inputfile
+	#####printinputfile
 	pattern	= re.compile(r'_(\d*?)_')
 	tmStamp	= pattern.search(net_graph_filename)
 	graphTimeStampID  = tmStamp.group(1)
@@ -137,22 +195,23 @@ def get_network_timestamp_string(net_graph_filename):
 
 if __name__ == "__main__":
 	## Begin
-	print '-'*80
+	###print'-'*80
 	parser = argparse.ArgumentParser(description='Parse Subdue Ouput files')
 	parser.add_argument('log_file', help='Input file: subdue log', action='store')
 	parser.add_argument('igraph_file', help='Input file: .ig graph file', action='store')
 	args = parser.parse_args()
-    
-    ## "/data/saguinag/Datasets/subdue/overlap_21Apr15_2106.log"
+	
+	## "/data/saguinag/Datasets/subdue/overlap_21Apr15_2106.log"
 	logFiles = SubdueLogFiles(args.log_file)
-	logFiles.getBestSubstructures()
+	print (logFiles.getBestSubstructures())
 	logFiles.getInstancesCount()
 	logFiles.getSubstructureModels()
 	# matrix_df = pd.DataFrame()
 	matrix_df = pd.DataFrame( logFiles.fsg_inst )
 	matrix_df.columns = ['fsg','instances']
 	models = logFiles.fsg_models
-		
+	####printmodels 
+
 	models_lst = []
 	subg_weight = []
 	k = 1
@@ -169,6 +228,8 @@ if __name__ == "__main__":
 	#   fsg instances		  models  sbg_wt
 	# 0   1	   215	Graph(3v,2e)	   5
 	# 1   2	   211	Graph(3v,2e)	   5
+	####printmatrix_df 
+
 
 	logFiles.getSubgraphNodesInInstance() 
 	subgs_dict = logFiles.subgraph_nodes_dict
@@ -178,12 +239,12 @@ if __name__ == "__main__":
 	## "/data/saguinag/Datasets/subdue/overlap.ig"
 	g = Graph()
 	g = g.Read_Edgelist(args.igraph_file)
-	#print 'Da graph:\n',(g)
+	####print'Da graph:\n',(g)
 	
 	subg_nodes_dict	= dict()
 	## iterate over the ordered dict 
 	for skey in subgs_od:
-		subg_nodes_dict[skey] = [g.degree(x) for x in subgs_od[skey]]       # sbg node degree
+		subg_nodes_dict[skey] = [g.degree(x) for x in subgs_od[skey]]	   # sbg node degree
 		
 	df = pd.DataFrame.from_dict(subg_nodes_dict.items())
 	df.columns =['sbg_inst','vDegree']		# dict to dataframe
@@ -191,10 +252,21 @@ if __name__ == "__main__":
 	df['sVertices'] = [len(x) for x in df['vDegree']]		# nbr of vertices in subgraph
 	df['sbg'] = [x.split('_')[0] for x in df['sbg_inst']]
 	df['inst'] = [x.split('_')[1] for x in df['sbg_inst']]
-	print df.head()
-	# print logFiles.fsg_inst
-	df.to_csv("subgraphs_netanalysis.csv", index = False, quoting=0)
+	####printdf.head()
+
+	# # ###printlogFiles.fsg_inst
+	# df.to_csv("subgraphs_netanalysis.csv", index = False, quoting=0)
 
 	## Summary
-	# print matrix_df
-	# print df.shape
+	# ###printmatrix_df
+	# ###printdf.shape
+
+	######################################
+	## List nodes in Graph(3v,2e) Models
+	##
+	######################################
+	# df = pd.DataFrame.from_dict(subgs_od.items())
+	# df.columns =['sbg_inst','vertices']		# dict to dataframe	
+	####printdf.head()
+	nodes_in_fsg = logFiles.getNodesInFreqSubGraph(3)
+	#pprint.pprint(logFiles.subgraph_nodes_dict)
