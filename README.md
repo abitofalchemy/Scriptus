@@ -8,10 +8,9 @@ Scripts include Python, PHP, Octave, Matlab, JS, and others. Feel free to use th
 and when something isn't clear, feel free to contact me and ask for more info and
 details.
 
+## Python Bindings for a C++ Library
 
-## StarLog
-
-06Jul16: Added Cpps and R's
+Using a [Python bindings generator on a C++ library](docs/PythonBindingsGenCpp.md).
 
 ## On R (cheat sheets)
 -[From the DataCamp course - data.table] (https://s3.amazonaws.com/assets.datacamp.com/img/blog/data+table+cheat+sheet.pdf)
@@ -28,3 +27,6 @@ From R to 'system call' back with exit status of the system call.
 ## Remote job
 http://unix.stackexchange.com/questions/30400/execute-remote-commands-completely-detaching-from-the-ssh-connection
 
+## StarLog
+
+06Jul16: Added Cpps and R's
