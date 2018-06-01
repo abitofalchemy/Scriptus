@@ -1,0 +1,4 @@
+cat .tmux.conf
+new-session -n $HOST
+
+

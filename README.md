@@ -28,5 +28,6 @@ From R to 'system call' back with exit status of the system call.
 http://unix.stackexchange.com/questions/30400/execute-remote-commands-completely-detaching-from-the-ssh-connection
 
 ## StarLog
+- Compiling with GoogleTest; https://stackoverflow.com/questions/27091412/how-to-compile-a-gtest-cpp-file 
 
 06Jul16: Added Cpps and R's
