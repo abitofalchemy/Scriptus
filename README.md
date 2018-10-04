@@ -1,3 +1,7 @@
+% Scriptus
+% Sal Aguinaga
+% 04, Oct, 2018
+
 Scriptus
 ========
 
