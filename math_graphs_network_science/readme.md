@@ -13,7 +13,7 @@ A Practical Introduction to Mathematical Graphs and Network Science
 human-centred experiments to understand how, in practice, different features and characteristics 
 of node-link diagrams affect visual complexity"
 
-**[Graph Neural Networks]**. A comprehensive survey on graph neural nets.
+**[Graph Neural Networks][5]**. A comprehensive survey on graph neural nets.
 
 
 References:
