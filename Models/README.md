@@ -15,4 +15,5 @@ Radial Basis Function (RBF) kernel
 
 ## Deep Learning
 
-
+# References 
+[1]: [Balance sets](https://www.kaggle.com/rafjaa/resampling-strategies-for-imbalanced-datasets)
