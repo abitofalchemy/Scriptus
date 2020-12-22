@@ -1,0 +1,2 @@
+hive -e "ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' "select * from HCAADVAPH_ALLOB_WK_PING.network_provnm_risk;" | sed 's/\t\+/,/g' ">network_prov_risk.csv;
+ 
