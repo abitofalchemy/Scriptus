@@ -2,3 +2,4 @@
 *.copy
 *.xscheme
 mallet-2.0.8
+.Rproj.user
