@@ -15,17 +15,30 @@ __version__ = "0.1.0"
 import argparse,traceback,optparse
 import pandas as pd
 import os, sys, time
-import networkx as nx
-import matplotlib
-matplotlib.use('pdf')
 import logging
 from datetime import datetime
-
-
-import matplotlib.pyplot as plt
-plt.style.use('ggplot')
+import json
+from src.ges_utils import (
+    prep_graph_for_training,
+    list_cached_claims
+)
+from icdcodex import icd2vec, hierarchy
+import src.train_ne_model as getrain
+import src.node_embeddings_model_evaluation as eval
 
 ### Util Functions
+def list_available_graphs(app_configs):
+    from src.ges_utils import list_available_graphs
+
+    list_available_graphs(app_configs)
+    return 
+
+def list_available_models(app_configs):
+    from src.ges_utils import list_available_models
+    logging.info("list available models")
+    list_available_models(app_configs)
+    return  
+
 def initialize_logger(output_dir, logfname, mode):
     """
     @param output_dir:  output directory for log files
@@ -75,6 +88,10 @@ def initialize_logger(output_dir, logfname, mode):
                     logfname)))
     return
 
+def select_graph_train_n2v(conf):
+    
+    return
+    
 def get_parser():
     ''' Get Parser
     <Expanded description>
@@ -83,28 +100,54 @@ def get_parser():
     Return: argparser object to use the arguments passed to this function
     '''
     ### Define set of valid arguments
-    parser = argparse.ArgumentParser(description='filename: Descritipn like: Hyperedge Replacement Grammars Model')
-    parser.add_argument('graph_name', metavar='GRAPH_NAME', nargs=1, help='the graph name to process')
-    #parser.add_argument('--list',  nargs=0, help='unique file names', action=ListSupportedGraphs)
-    parser.add_argument('-s','--save',  help='Save to disk with unique names', action='store_true', default=False)
+    parser = argparse.ArgumentParser(description='Graph Embeddings')
+    parser.add_argument(
+        '-c',
+        '--config_file',
+        dest='config_file',
+        type=str,
+        default=None,
+        help='config file',
+    )
     parser.add_argument('--version', action='version', version=__version__)
     return parser
 
 
 def main():
-    ### Main Description
 
     ### Setup Logging
     LOG_DIR='./logs'
     LOG_FNAME=sys.argv[0].split('.')[0]
     LOG_FNAME+='.log'
-    print(LOG_FNAME)
+    # print(LOG_FNAME)
     initialize_logger(LOG_DIR, LOG_FNAME, 'a')
 
     parser = get_parser()
     args = vars(parser.parse_args())
-    logging.info(f"{args}")
+    
+    
+    if args['config_file'] is not None and ('.yaml' in args['config_file']):
+        # The escaping of "\t" in the config file is necesarry as
+        # otherwise Python will try to treat is as the string escape
+        # sequence for ASCII Horizontal Tab when it encounters it
+        # during json.load
+#        config = json.load(open(args['config_file']))
+#        print(config)
+        import yaml
+        with open(args['config_file'], 'r') as file:
+            config = yaml.safe_load(file)
+        print(config.keys())
+    ###
+    config['logger'] = logging
+    # list_cached_claims(config)
+    # list_available_graphs(config)
+    # list_available_models(config)
+    # prep_graph_for_training(config)         # Builds graph
+    # select_graph_train_n2v(config)          # Select a graph
+    getrain.model_traing(config)          # Train selected node embeddings
+    eval.node_embeddings_evaluation(config)     # Evaluation (intrinsic) node embeddings
 
+    
 if __name__ == '__main__':
     try:
         main()
