@@ -1,4 +1,4 @@
-__author__ = 'saguinag'+'@'+'nd.edu'
+__author__ = 'saguinaga'+'@'+'deloitte.com'
 __version__ = "0.1.0"
 
 ##
@@ -28,8 +28,10 @@ plt.style.use('ggplot')
 ### Util Functions
 def initialize_logger(output_dir, logfname, mode):
     """
-    @param output_dir:  output directory for log files
-    @return:        None
+    @param output_dir: output directory for log files
+    @param logfname:   logs filename
+    @param mode:       'a' for append or 'w' to overwrite to log
+    @return:           None
     """
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
@@ -83,7 +85,7 @@ def get_parser():
     Return: argparser object to use the arguments passed to this function
     '''
     ### Define set of valid arguments
-    parser = argparse.ArgumentParser(description='filename: Descritipn like: Hyperedge Replacement Grammars Model')
+    parser = argparse.ArgumentParser(description='filename: Description like: Hyperedge Replacement Grammars Model')
     parser.add_argument('graph_name', metavar='GRAPH_NAME', nargs=1, help='the graph name to process')
     #parser.add_argument('--list',  nargs=0, help='unique file names', action=ListSupportedGraphs)
     parser.add_argument('-s','--save',  help='Save to disk with unique names', action='store_true', default=False)

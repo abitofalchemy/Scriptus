@@ -1,6 +1,30 @@
 MBP GNN 
 =======
 
+## Notes on Edge Drive AutoEncoder using PyG
+
+When we have an edgelist and each edge has a set of edge features, how do we build an autoencoder for such a dataset? Below is
+an exploration of this question using Pytorch Geometric (pyg).
+
+Here is dataset:
+
+```
+srcLabel trgLabel edgVar1, edgVar2, edgLabel
+```
+
+### Conditions 
+
+1. No node level features 
+2. Labels are all of one kind (no binary labels)
+
+### Objective 
+
+The objective or goal we are after in this exploration is to build a graph autoencoder that trains on edges labeled as `0` and 
+we test on a fraction of the dataset to obtain a relatively low reconstruction loss. 
+
+
+
+
 ## Setup on MacOS 
 
 source activate torosx this is for a Deloitte project
