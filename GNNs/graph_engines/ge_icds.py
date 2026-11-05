@@ -1,4 +1,4 @@
-__author__ = 'saguinaga'+'@'+'company.com'
+__author__ = 'saguinaga'+'@'+'email.com'
 __version__ = "0.1.0"
 
 ##
