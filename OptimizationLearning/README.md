@@ -8,14 +8,6 @@ Quantum computation meets data science: using quantum circuits in place of neura
 
 [Graph Optimization Learning - graph embeddding](https://dev.azure.com/company-AI-CoE/AI%20CoE%20Live%20Projects/_git/OptimizationLearning)
 
-## Next Steps 
-
-ToDo:
-
-| Item/Task | Description | Target Date| 
-|:------|:----------------:----------:|
-company Datasets | 
-Public Datasets   | Cora a citations dataset - Public  
 
 # Background 
 
