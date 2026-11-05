@@ -4,9 +4,6 @@
 
 Quantum computation meets data science: using quantum circuits in place of neural networks to learn patterns from data. 
 
-## Code Repo 
-
-[Graph Optimization Learning - graph embeddding](https://dev.azure.com/company-AI-CoE/AI%20CoE%20Live%20Projects/_git/OptimizationLearning)
 
 
 # Background 
