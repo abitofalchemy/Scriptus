@@ -27,7 +27,7 @@ we test on a fraction of the dataset to obtain a relatively low reconstruction l
 
 ## Setup on MacOS 
 
-source activate torosx this is for a company project
+source activate torosx this is for a  project
 
 for exploring baselines with pyg and dgl: pytg
 
